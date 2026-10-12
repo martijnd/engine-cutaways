@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SV650 vs CBR650R: two engines, one crank angle</title>
+<style>/*CSS*/</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Suzuki SV650 and Honda CBR650R: two engines on one crank angle</h1>
+  <p>Two middleweight engines of about the same size, built in different ways. Suzuki splits 645&nbsp;cc between two big cylinders set 90° apart. Honda splits 649&nbsp;cc between four small ones in a row. Both cutaways below turn at the same crank speed, so you can watch the twin's uneven 270°/450° beat beside the four's even 180° rhythm.</p>
+</header>
+
+<div class="controls" role="group" aria-label="Engine controls">
+  <div class="seg" role="group" aria-label="View">
+    <button type="button" data-view-btn="sv" aria-pressed="false">SV650 only</button>
+    <button type="button" data-view-btn="cbr" aria-pressed="false">CBR650R only</button>
+    <button type="button" data-view-btn="both" aria-pressed="true">Side by side</button>
+  </div>
+  <button type="button" class="btn" id="play" aria-pressed="false"><svg class="ico" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 0l9 5-9 5z"/></svg><span class="lbl">Play</span></button>
+  <div class="crank">
+    <label for="crank">Crank angle</label>
+    <input id="crank" type="range" min="0" max="720" step="1" value="0">
+    <output id="crank-out" for="crank">0°</output>
+  </div>
+</div>
+<p id="live" class="sr" aria-live="polite"></p>
+
+<div class="engines" data-view="both">
+  <article class="engine" data-engine="sv" aria-labelledby="sv-h">
+    <div class="plate">
+      <span class="corner fig">Fig 1</span>
+      <span class="corner title" id="sv-h">Suzuki SV650 · 90° V-twin</span>
+      <div class="stage"><svg role="img" aria-label="Cutaway of the Suzuki SV650 90-degree V-twin seen from the left, front of the engine to the left. Both cylinders are cut through their axes. Two connecting rods share one crankpin; each head shows its near intake and exhaust valve, springs, buckets and two camshafts."></svg></div>
+      <span class="corner hint">Crank turns forward</span>
+      <span class="corner readout">θ 0°</span>
+    </div>
+    <div class="cyls" aria-label="SV650 cylinders"></div>
+    <div class="asm">
+      <h3>Assemblies</h3>
+      <div class="chips" role="group" aria-label="Highlight an SV650 assembly"></div>
+      <p class="explain" aria-live="polite">Pick an assembly to highlight it and read what it does. Front fires at 0°, rear at 270°, and the front fires again at 720°.</p>
+    </div>
+    <div class="specs">
+      <dl>
+        <dt>Layout</dt><dd>4-stroke, liquid-cooled, DOHC, 90° V-twin</dd>
+        <dt>Displacement</dt><dd>645 cm³ <small>(81.0 × 62.6 mm gives 645.2 cm³)</small></dd>
+        <dt>Bore × stroke</dt><dd>81.0 × 62.6 mm <small>· bore/stroke 1.29</small></dd>
+        <dt>Compression</dt><dd>11.2 : 1</dd>
+        <dt>Valves</dt><dd>4 per cylinder, 8 in total <span class="tag" title="Suzuki says DOHC; the count is from secondary sources">secondary source</span></dd>
+        <dt>Fuel / ignition</dt><dd>Fuel injection, 39 mm throttle bodies; Dual Spark, two plugs per cylinder</dd>
+        <dt>Crankpin</dt><dd>One pin shared by both rods</dd>
+        <dt>Firing</dt><dd>Front → rear 270°, rear → front 450° <span class="tag" title="Follows from a 90° V with one shared crankpin; the front-then-270° sequence is from a service how-to, not a Suzuki document">derived</span></dd>
+      </dl>
+    </div>
+  </article>
+
+  <article class="engine" data-engine="cbr" aria-labelledby="cbr-h">
+    <div class="plate">
+      <span class="corner fig">Fig 2</span>
+      <span class="corner title" id="cbr-h">Honda CBR650R · inline-four</span>
+      <div class="stage"><svg role="img" aria-label="Cutaway of the Honda CBR650R inline-four seen from the front, square to a cut along the plane of the cylinder axes. Cylinder 1 is on the right of this view. Four pistons move in pairs on a crankshaft with throws 180 degrees apart; two overhead camshafts serve sixteen valves."></svg></div>
+      <span class="corner hint">Front · #1 on the right</span>
+      <span class="corner readout">θ 0°</span>
+    </div>
+    <div class="cyls" aria-label="CBR650R cylinders: select one to jump to its firing angle"></div>
+    <div class="asm">
+      <h3>Assemblies</h3>
+      <div class="chips" role="group" aria-label="Highlight a CBR650R assembly"></div>
+      <p class="explain" aria-live="polite">Pick an assembly to highlight it and read what it does. Select a cylinder card to jump to the angle where that cylinder fires.</p>
+    </div>
+    <div class="specs">
+      <dl>
+        <dt>Layout</dt><dd>4-stroke, liquid-cooled, DOHC inline-four, canted forward 30°</dd>
+        <dt>Displacement</dt><dd>649 cm³ <small>(67.0 × 46.0 mm × 4 gives 648.7 cm³)</small></dd>
+        <dt>Bore × stroke</dt><dd>67.0 × 46.0 mm <small>· bore/stroke 1.46</small></dd>
+        <dt>Compression</dt><dd>11.6 : 1</dd>
+        <dt>Valves</dt><dd>4 per cylinder, 16 in total; direct cam actuation <span class="tag" title="Direct actuation is stated in Honda's CBR650F press pack, the same engine family">CBR650F press pack</span></dd>
+        <dt>Output</dt><dd>70 kW at 12,000 rpm; 63 Nm at 9,500 rpm <small>(Honda UK, current model)</small></dd>
+        <dt>Crank</dt><dd>Throws 1 &amp; 4 together, 2 &amp; 3 opposite <span class="tag" title="Conventional for an even-firing inline-four; not stated in Honda's public documents">conventional</span></dd>
+        <dt>Firing</dt><dd>1–2–4–3, every 180° <span class="tag" title="Conventional for an even-firing inline-four; not stated in Honda's public documents">conventional</span></dd>
+      </dl>
+    </div>
+  </article>
+</div>
+
+<section class="panel tl" aria-labelledby="tl-h">
+  <h2 id="tl-h">Firing events at the same crank speed</h2>
+  <p class="note" style="margin-top:0">Each lane shows one cylinder's four strokes over two crank turns. Diamonds mark firing, the start of each power stroke. Drag across the chart to set the crank angle.</p>
+  <div class="tl-scroll" tabindex="0" role="group" aria-label="Firing timeline; scrolls sideways on small screens">
+  <svg viewBox="0 -2 780 254" role="img" aria-label="Timeline over 0 to 720 degrees. SV650: front fires at 0, rear at 270, so the gaps are 270 and 450 degrees. CBR650R: cylinder 1 fires at 0, 2 at 180, 4 at 360 and 3 at 540, an even 180 degrees apart."></svg>
+  </div>
+  <div class="legend" aria-hidden="true">
+    <span><i style="background:var(--ph-p)"></i>Power</span><span><i style="background:var(--ph-e)"></i>Exhaust</span><span><i style="background:var(--ph-i)"></i>Intake</span><span><i style="background:var(--ph-c)"></i>Compression</span><span><i style="background:var(--fire);width:9px;transform:rotate(45deg) scale(.8)"></i>Firing</span>
+  </div>
+  <p class="note">At 6,000 rpm the crank turns 36° per millisecond. The SV650 then fires 7.5&nbsp;ms after the front cylinder and 12.5&nbsp;ms after the rear, while the CBR650R fires every 5&nbsp;ms. So the four fires twice as often, and evenly. The twin's long gap of 450° spans two and a half of the four's intervals with no new firing. Stroke phases switch exactly at the dead centres here, which is idealized; real valve events overlap them.</p>
+</section>
+
+<div class="notes">
+  <section>
+    <h2>What is idealized</h2>
+    <ul>
+      <li><b>Valve timing and cam profiles.</b> Each lobe is a symmetric bump that lifts a flat bucket, with its peak 105° from TDC. Lift is computed from the drawn lobe. Neither maker publishes timing figures.</li>
+      <li><b>Rod lengths:</b> 130 mm for the SV650 and 98 mm for the CBR650R. Neither is published. Piston travel at the dead centres is exact; between them it depends on these lengths.</li>
+      <li><b>Castings:</b> crankcase, block, head and port shapes, coolant jackets, bore pitch (80 mm on the CBR650R), main-bearing layout, valve angles and valve sizes.</li>
+      <li><b>Direction of rotation:</b> both cranks are drawn turning forward, which is assumed. The 270°/450° gaps and the 180° rhythm don't depend on it.</li>
+      <li><b>Phases</b> switch at exactly 0°, 180°, 360° and 540° after each cylinder fires.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Left out</h2>
+    <ul>
+      <li>Cam chains and tensioners, spark plugs and ignition, injectors and throttle bodies, oil pump and galleries, gearbox, clutch, starter and generator.</li>
+      <li>The far intake and exhaust valves of each SV650 cylinder, which are hidden behind the cut.</li>
+      <li>The near crank web of the SV650, cut away to show both rods on the shared pin.</li>
+    </ul>
+    <h2 style="margin-top:14px">Not to scale with each other</h2>
+    <p class="note" style="margin:0">Each drawing is fitted to its own frame, so the two are not a size comparison. Within one drawing, parts keep their proportions: bore, stroke and the piston travel you see share one scale.</p>
+  </section>
+  <section>
+    <h2>Sources</h2>
+    <ul>
+      <li><a href="https://www.globalsuzuki.com/motorcycle/smgs/products/2025sv650/">Suzuki Global: 2025 SV650 product page</a>, for the engine type, 645 cm³, 81.0 × 62.6 mm, 11.2:1, Dual Spark and 39 mm throttle bodies</li>
+      <li><a href="https://www.suzuki.co.nz/Motorcycles/Model/sv650a/lams">Suzuki New Zealand: SV650 specifications</a></li>
+      <li><a href="https://www.globalsuzuki.com/globalnews/2016/0803.html">Suzuki global news, 2016</a>, for the 90° V-twin and the tinned, resin-coated piston skirts</li>
+      <li><a href="https://hondanews.com/en-US/releases/release-410d07897fdd63d8043cb727500900a8-2024-honda-cbr650r-specifications">American Honda: 2024 CBR650R specifications</a>, for the 649 cc inline-four canted 30°, 67.0 × 46.0 mm, 11.6:1 and DOHC with four valves per cylinder</li>
+      <li><a href="https://www.honda.co.uk/motorcycles/range/super-sport/cbr650r/specifications-and-price.html">Honda UK: CBR650R specifications</a>, for 16 valves and 70 kW / 63 Nm</li>
+      <li><a href="https://hondanews.eu/eu/en/cars/media/pressreleases/35055/cbr650f-press-pack">Honda Europe: CBR650F press pack</a>, for direct cam actuation in the same engine family</li>
+      <li><a href="https://bayarearidersforum.com/forums/threads/how-to-sv650-valve-clearance-chk-adj.189876">SV650 valve-clearance how-to</a> (secondary), for the F and R marks 270° apart, front first</li>
+      <li><a href="https://en.wikipedia.org/wiki/Big-bang_firing_order">Wikipedia: big-bang firing order</a> (secondary), for the 90° V-twin's 270°/450° intervals</li>
+    </ul>
+  </section>
+</div>
+</div>
+<script>/*JS*/</script>
+</body>
+</html>

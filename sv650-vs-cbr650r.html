@@ -1,0 +1,1376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SV650 vs CBR650R: two engines, one crank angle</title>
+<style>:root{
+  color-scheme:light dark;
+  --page:#f1f1ee;--card:#fbfbf9;--ink:#1b1c1e;--text:#4c4f54;--muted:#808388;--rule:#d9dad6;--rule2:#c6c7c3;
+  --m0:#a3a7ac;--m1:#b3b7bb;--m2:#c2c5c9;--m3:#d0d3d6;--m4:#dcdee0;--m5:#e8e9eb;--m6:#f4f5f6;
+  --cut:#e7e4dc;--cutline:#b2ada2;--cavw:#9a9ea3;--cavf:#b4b7bb;--cool:#a9bfc8;--coolw:#8ea5af;--rec:#c7cacd;
+  --bore0:#a7abb0;--secm:#d9dbde;
+  --edge:#4d5156;--crease:#9a9da2;--hi:#1d1f22;--lit:#000;--fire:#e07b1f;--fire-soft:#f6c48e;
+  --ph-p:#6f7378;--ph-e:#9ea2a7;--ph-i:#c4c7cb;--ph-c:#dfe1e3;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --focus:#2b62d9;
+}
+@media (prefers-color-scheme:dark){:root{
+  --page:#0c0d0e;--card:#141516;--ink:#e7e8ea;--text:#a9acb0;--muted:#73767b;--rule:#26282a;--rule2:#34373a;
+  --m0:#1c1e20;--m1:#232628;--m2:#2b2e31;--m3:#34383b;--m4:#3e4246;--m5:#4a4f53;--m6:#585d62;
+  --cut:#33312d;--cutline:#5f5b55;--cavw:#141617;--cavf:#222528;--cool:#15262d;--coolw:#0e1a1f;--rec:#1d2022;
+  --bore0:#141617;--secm:#50555a;
+  --edge:#8e9399;--crease:#4a4e52;--hi:#e2e5e8;--lit:#fff;--fire:#f29a45;--fire-soft:#7a4a1c;
+  --ph-p:#9a9ea3;--ph-e:#6b6f74;--ph-i:#45484c;--ph-c:#2c2f32;
+  --focus:#7aa2ff;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--page);color:var(--text);font:15px/1.55 var(--sans)}
+a{color:var(--ink)}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 20px 64px}
+header h1{margin:0 0 6px;color:var(--ink);font-size:clamp(22px,3.4vw,32px);line-height:1.15;letter-spacing:-.01em;font-weight:600}
+header p{margin:0;max-width:72ch}
+.mono{font-family:var(--mono)}
+
+/* controls */
+.controls{position:sticky;top:0;z-index:5;margin:22px -20px 18px;padding:12px 20px;background:color-mix(in srgb,var(--page) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--rule2);background:var(--card)}
+.seg button{all:unset;cursor:pointer;padding:8px 12px;font:12px/1 var(--mono);letter-spacing:.04em;color:var(--text);text-transform:uppercase;white-space:nowrap}
+.seg button+button{border-left:1px solid var(--rule2)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
+.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--rule2);background:var(--card);font:12px/1 var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink);min-width:72px;justify-content:center}
+.btn svg{width:10px;height:10px;fill:currentColor}
+.crank{display:flex;align-items:center;gap:10px;flex:1 1 300px;min-width:240px}
+.crank label{font:12px/1 var(--mono);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.crank input{flex:1;min-width:120px;accent-color:var(--ink)}
+.crank output{font:13px/1 var(--mono);color:var(--ink);font-variant-numeric:tabular-nums;min-width:4.2ch;text-align:right}
+button:focus-visible,input:focus-visible,.cyl-card:focus-visible,.tl svg:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* engine figures */
+.engines{display:grid;gap:22px;grid-template-columns:1fr 1fr;align-items:start}
+.engines[data-view="sv"] .engine[data-engine="cbr"],.engines[data-view="cbr"] .engine[data-engine="sv"]{display:none}
+.engines[data-view="sv"],.engines[data-view="cbr"]{grid-template-columns:minmax(0,1fr)}
+.engines[data-view="sv"] .engine,.engines[data-view="cbr"] .engine{max-width:900px;width:100%;margin:0 auto}
+@media (max-width:860px){.engines{grid-template-columns:minmax(0,1fr)}}
+.engine{min-width:0}
+.plate{position:relative;background:var(--card);box-shadow:0 0 0 1px var(--rule2);padding:44px 14px 40px}
+.corner{position:absolute;font:10.5px/1.2 var(--mono);letter-spacing:.06em;color:var(--muted);white-space:nowrap}
+.corner.fig{top:16px;left:16px;color:var(--text)}
+.corner.title{top:16px;right:16px;text-transform:uppercase;letter-spacing:.1em;text-align:right}
+.corner.hint{bottom:14px;left:16px;text-transform:uppercase;letter-spacing:.1em}
+.corner.readout{bottom:14px;right:16px;color:var(--text);font-variant-numeric:tabular-nums}
+.stage svg{display:block;width:100%;height:auto;overflow:visible}
+.stage svg path{vector-effect:none}
+.f{stroke-width:.32;stroke-linejoin:round}
+.m0{fill:var(--m0);stroke:var(--m0)}.m1{fill:var(--m1);stroke:var(--m1)}.m2{fill:var(--m2);stroke:var(--m2)}.m3{fill:var(--m3);stroke:var(--m3)}.m4{fill:var(--m4);stroke:var(--m4)}.m5{fill:var(--m5);stroke:var(--m5)}.m6{fill:var(--m6);stroke:var(--m6)}
+.bore.b0,.bore.b1,.bore.b2{fill:var(--m0);stroke:var(--m0)}.bore.b3{fill:var(--m1);stroke:var(--m1)}.bore.b4{fill:var(--m2);stroke:var(--m2)}.bore.b5,.bore.b6{fill:var(--m3);stroke:var(--m3)}
+.bore0{fill:var(--bore0);stroke:var(--bore0)}
+.cut{fill:var(--cut);stroke:var(--cut)}
+.crown{fill:var(--m5);stroke:var(--m5)}
+.secm{fill:var(--secm);stroke:var(--secm)}
+.cavw{fill:var(--cavw);stroke:var(--cavw)}.cavf{fill:var(--cavf);stroke:var(--cavf)}
+.cool{fill:var(--cool);stroke:var(--cool)}.coolw{fill:var(--coolw);stroke:var(--coolw)}
+.rec{fill:var(--rec);stroke:var(--rec)}
+.e{fill:none;stroke:var(--edge);stroke-width:.6px;vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
+.cr{fill:none;stroke:var(--crease);stroke-width:.5px;vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
+.ring{fill:none;stroke:var(--hi);stroke-width:.75px;vector-effect:non-scaling-stroke;stroke-linecap:round;opacity:.75}
+.ring2{fill:none;stroke:var(--edge);stroke-width:.55px;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.bore-plate{fill:none;stroke:var(--cutline);stroke-width:1.2px;vector-effect:non-scaling-stroke}
+.coil-o{fill:none;stroke:var(--edge);stroke-linecap:round;stroke-linejoin:round}
+.coil-i{fill:none;stroke:var(--m5);stroke-linecap:round;stroke-linejoin:round}
+.coil-i.cb{stroke:var(--m2)}
+.flash{fill:var(--fire);stroke:none;mix-blend-mode:normal}
+.engrave{fill:var(--cutline);font-family:var(--mono);font-weight:600}
+[data-asm]{transition:opacity .35s ease}
+@media (prefers-reduced-motion:reduce){[data-asm]{transition:none}}
+
+/* cylinder cards */
+.cyls{display:grid;gap:8px;margin-top:10px}
+.cyls[data-n="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cyls[data-n="4"]{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:520px){.cyls[data-n="4"]{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.cyl-card{all:unset;box-sizing:border-box;display:block;background:var(--card);box-shadow:0 0 0 1px var(--rule2);padding:10px 11px 11px;font:12px/1.35 var(--mono);color:var(--text);min-width:0}
+button.cyl-card{cursor:pointer}
+button.cyl-card:hover{box-shadow:0 0 0 1px var(--edge)}
+.cyl-card .top{display:flex;justify-content:space-between;gap:6px;color:var(--muted);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+.cyl-card .ph{display:block;margin:5px 0 6px;color:var(--ink);font-size:14px;letter-spacing:.01em}
+.cyl-card[data-phase="0"] .ph{color:var(--fire)}
+.cyl-card .bar{display:block;height:3px;background:var(--rule);overflow:hidden}
+.cyl-card .bar i{display:block;height:100%;width:0;background:var(--ink)}
+.cyl-card .num{display:block;margin-top:6px;font-variant-numeric:tabular-nums}
+.cyl-card .vlv{display:block;color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+
+/* assemblies */
+.asm{margin-top:14px}
+.asm h3,.panel h3{margin:0 0 8px;font:11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{all:unset;cursor:pointer;padding:7px 10px;border:1px solid var(--rule2);background:var(--card);font:12px/1 var(--sans);color:var(--text)}
+.chips button[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.explain{margin:10px 0 0;min-height:4.6em;font-size:14px;color:var(--text)}
+.explain b{color:var(--ink);font-weight:600}
+
+/* specs */
+.specs{margin-top:16px;background:var(--card);box-shadow:0 0 0 1px var(--rule2);padding:14px 16px}
+.specs dl{display:grid;grid-template-columns:minmax(110px,max-content) 1fr;gap:6px 16px;margin:0;font-size:13.5px}
+.specs dt{color:var(--muted);font:12px/1.6 var(--mono)}
+.specs dd{margin:0;color:var(--ink)}
+.specs dd small{color:var(--muted);font-size:12px}
+.tag{display:inline-block;margin-left:6px;padding:1px 5px;border:1px solid var(--rule2);font:10px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);vertical-align:1px}
+.tag.ideal{border-style:dashed}
+
+/* timeline */
+.panel{margin-top:26px;background:var(--card);box-shadow:0 0 0 1px var(--rule2);padding:18px 18px 16px}
+.panel h2{margin:0 0 4px;color:var(--ink);font-size:18px;font-weight:600}
+.tl-scroll{overflow-x:auto;overscroll-behavior-x:contain}
+.tl svg{min-width:620px;display:block;width:100%;height:auto;touch-action:pan-x pan-y;cursor:ew-resize}
+.tl .lane-label{fill:var(--text);font:11px var(--mono)}
+.tl .group-label{fill:var(--ink);font:600 11px var(--mono);letter-spacing:.06em}
+.tl .axis{fill:var(--muted);font:10px var(--mono)}
+.tl .grid{stroke:var(--rule);stroke-width:1}
+.tl .seg-p{fill:var(--ph-p)}.tl .seg-e{fill:var(--ph-e)}.tl .seg-i{fill:var(--ph-i)}.tl .seg-c{fill:var(--ph-c)}
+.tl .seg-t{font:10px var(--mono);pointer-events:none}
+.tl .seg-t.on-dark{fill:var(--card)}.tl .seg-t.on-light{fill:var(--ink)}
+.tl .fire{fill:var(--fire)}
+.tl .gap{fill:var(--text);font:10.5px var(--mono)}
+.tl .gapline{stroke:var(--muted);stroke-width:1;fill:none}
+.tl .cursor{stroke:var(--ink);stroke-width:1.5}
+.tl .cursor-cap{fill:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:14px;height:9px}
+.note{margin:12px 0 0;font-size:14px;max-width:85ch}
+
+.notes{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:26px}
+.notes section{background:var(--card);box-shadow:0 0 0 1px var(--rule2);padding:16px 18px}
+.notes h2{margin:0 0 8px;color:var(--ink);font-size:15px;font-weight:600}
+.notes ul{margin:0;padding-left:18px;font-size:13.5px}
+.notes li{margin:4px 0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (max-width:520px){
+  .wrap{padding:20px 14px 48px}
+  .controls{margin:16px -14px 14px;padding:10px 14px}
+  .plate{padding:40px 6px 52px}
+  .corner.hint{bottom:30px}
+  .corner.title{max-width:58%;white-space:normal}
+  .specs dl{grid-template-columns:1fr;gap:2px}
+  .specs dd{margin-bottom:6px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Suzuki SV650 and Honda CBR650R: two engines on one crank angle</h1>
+  <p>Two middleweight engines of about the same size, built in different ways. Suzuki splits 645&nbsp;cc between two big cylinders set 90° apart. Honda splits 649&nbsp;cc between four small ones in a row. Both cutaways below turn at the same crank speed, so you can watch the twin's uneven 270°/450° beat beside the four's even 180° rhythm.</p>
+</header>
+
+<div class="controls" role="group" aria-label="Engine controls">
+  <div class="seg" role="group" aria-label="View">
+    <button type="button" data-view-btn="sv" aria-pressed="false">SV650 only</button>
+    <button type="button" data-view-btn="cbr" aria-pressed="false">CBR650R only</button>
+    <button type="button" data-view-btn="both" aria-pressed="true">Side by side</button>
+  </div>
+  <button type="button" class="btn" id="play" aria-pressed="false"><svg class="ico" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 0l9 5-9 5z"/></svg><span class="lbl">Play</span></button>
+  <div class="crank">
+    <label for="crank">Crank angle</label>
+    <input id="crank" type="range" min="0" max="720" step="1" value="0">
+    <output id="crank-out" for="crank">0°</output>
+  </div>
+</div>
+<p id="live" class="sr" aria-live="polite"></p>
+
+<div class="engines" data-view="both">
+  <article class="engine" data-engine="sv" aria-labelledby="sv-h">
+    <div class="plate">
+      <span class="corner fig">Fig 1</span>
+      <span class="corner title" id="sv-h">Suzuki SV650 · 90° V-twin</span>
+      <div class="stage"><svg role="img" aria-label="Cutaway of the Suzuki SV650 90-degree V-twin seen from the left, front of the engine to the left. Both cylinders are cut through their axes. Two connecting rods share one crankpin; each head shows its near intake and exhaust valve, springs, buckets and two camshafts."></svg></div>
+      <span class="corner hint">Crank turns forward</span>
+      <span class="corner readout">θ 0°</span>
+    </div>
+    <div class="cyls" aria-label="SV650 cylinders"></div>
+    <div class="asm">
+      <h3>Assemblies</h3>
+      <div class="chips" role="group" aria-label="Highlight an SV650 assembly"></div>
+      <p class="explain" aria-live="polite">Pick an assembly to highlight it and read what it does. Front fires at 0°, rear at 270°, and the front fires again at 720°.</p>
+    </div>
+    <div class="specs">
+      <dl>
+        <dt>Layout</dt><dd>4-stroke, liquid-cooled, DOHC, 90° V-twin</dd>
+        <dt>Displacement</dt><dd>645 cm³ <small>(81.0 × 62.6 mm gives 645.2 cm³)</small></dd>
+        <dt>Bore × stroke</dt><dd>81.0 × 62.6 mm <small>· bore/stroke 1.29</small></dd>
+        <dt>Compression</dt><dd>11.2 : 1</dd>
+        <dt>Valves</dt><dd>4 per cylinder, 8 in total <span class="tag" title="Suzuki says DOHC; the count is from secondary sources">secondary source</span></dd>
+        <dt>Fuel / ignition</dt><dd>Fuel injection, 39 mm throttle bodies; Dual Spark, two plugs per cylinder</dd>
+        <dt>Crankpin</dt><dd>One pin shared by both rods</dd>
+        <dt>Firing</dt><dd>Front → rear 270°, rear → front 450° <span class="tag" title="Follows from a 90° V with one shared crankpin; the front-then-270° sequence is from a service how-to, not a Suzuki document">derived</span></dd>
+      </dl>
+    </div>
+  </article>
+
+  <article class="engine" data-engine="cbr" aria-labelledby="cbr-h">
+    <div class="plate">
+      <span class="corner fig">Fig 2</span>
+      <span class="corner title" id="cbr-h">Honda CBR650R · inline-four</span>
+      <div class="stage"><svg role="img" aria-label="Cutaway of the Honda CBR650R inline-four seen from the front, square to a cut along the plane of the cylinder axes. Cylinder 1 is on the right of this view. Four pistons move in pairs on a crankshaft with throws 180 degrees apart; two overhead camshafts serve sixteen valves."></svg></div>
+      <span class="corner hint">Front · #1 on the right</span>
+      <span class="corner readout">θ 0°</span>
+    </div>
+    <div class="cyls" aria-label="CBR650R cylinders: select one to jump to its firing angle"></div>
+    <div class="asm">
+      <h3>Assemblies</h3>
+      <div class="chips" role="group" aria-label="Highlight a CBR650R assembly"></div>
+      <p class="explain" aria-live="polite">Pick an assembly to highlight it and read what it does. Select a cylinder card to jump to the angle where that cylinder fires.</p>
+    </div>
+    <div class="specs">
+      <dl>
+        <dt>Layout</dt><dd>4-stroke, liquid-cooled, DOHC inline-four, canted forward 30°</dd>
+        <dt>Displacement</dt><dd>649 cm³ <small>(67.0 × 46.0 mm × 4 gives 648.7 cm³)</small></dd>
+        <dt>Bore × stroke</dt><dd>67.0 × 46.0 mm <small>· bore/stroke 1.46</small></dd>
+        <dt>Compression</dt><dd>11.6 : 1</dd>
+        <dt>Valves</dt><dd>4 per cylinder, 16 in total; direct cam actuation <span class="tag" title="Direct actuation is stated in Honda's CBR650F press pack, the same engine family">CBR650F press pack</span></dd>
+        <dt>Output</dt><dd>70 kW at 12,000 rpm; 63 Nm at 9,500 rpm <small>(Honda UK, current model)</small></dd>
+        <dt>Crank</dt><dd>Throws 1 &amp; 4 together, 2 &amp; 3 opposite <span class="tag" title="Conventional for an even-firing inline-four; not stated in Honda's public documents">conventional</span></dd>
+        <dt>Firing</dt><dd>1–2–4–3, every 180° <span class="tag" title="Conventional for an even-firing inline-four; not stated in Honda's public documents">conventional</span></dd>
+      </dl>
+    </div>
+  </article>
+</div>
+
+<section class="panel tl" aria-labelledby="tl-h">
+  <h2 id="tl-h">Firing events at the same crank speed</h2>
+  <p class="note" style="margin-top:0">Each lane shows one cylinder's four strokes over two crank turns. Diamonds mark firing, the start of each power stroke. Drag across the chart to set the crank angle.</p>
+  <div class="tl-scroll" tabindex="0" role="group" aria-label="Firing timeline; scrolls sideways on small screens">
+  <svg viewBox="0 -2 780 254" role="img" aria-label="Timeline over 0 to 720 degrees. SV650: front fires at 0, rear at 270, so the gaps are 270 and 450 degrees. CBR650R: cylinder 1 fires at 0, 2 at 180, 4 at 360 and 3 at 540, an even 180 degrees apart."></svg>
+  </div>
+  <div class="legend" aria-hidden="true">
+    <span><i style="background:var(--ph-p)"></i>Power</span><span><i style="background:var(--ph-e)"></i>Exhaust</span><span><i style="background:var(--ph-i)"></i>Intake</span><span><i style="background:var(--ph-c)"></i>Compression</span><span><i style="background:var(--fire);width:9px;transform:rotate(45deg) scale(.8)"></i>Firing</span>
+  </div>
+  <p class="note">At 6,000 rpm the crank turns 36° per millisecond. The SV650 then fires 7.5&nbsp;ms after the front cylinder and 12.5&nbsp;ms after the rear, while the CBR650R fires every 5&nbsp;ms. So the four fires twice as often, and evenly. The twin's long gap of 450° spans two and a half of the four's intervals with no new firing. Stroke phases switch exactly at the dead centres here, which is idealized; real valve events overlap them.</p>
+</section>
+
+<div class="notes">
+  <section>
+    <h2>What is idealized</h2>
+    <ul>
+      <li><b>Valve timing and cam profiles.</b> Each lobe is a symmetric bump that lifts a flat bucket, with its peak 105° from TDC. Lift is computed from the drawn lobe. Neither maker publishes timing figures.</li>
+      <li><b>Rod lengths:</b> 130 mm for the SV650 and 98 mm for the CBR650R. Neither is published. Piston travel at the dead centres is exact; between them it depends on these lengths.</li>
+      <li><b>Castings:</b> crankcase, block, head and port shapes, coolant jackets, bore pitch (80 mm on the CBR650R), main-bearing layout, valve angles and valve sizes.</li>
+      <li><b>Direction of rotation:</b> both cranks are drawn turning forward, which is assumed. The 270°/450° gaps and the 180° rhythm don't depend on it.</li>
+      <li><b>Phases</b> switch at exactly 0°, 180°, 360° and 540° after each cylinder fires.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Left out</h2>
+    <ul>
+      <li>Cam chains and tensioners, spark plugs and ignition, injectors and throttle bodies, oil pump and galleries, gearbox, clutch, starter and generator.</li>
+      <li>The far intake and exhaust valves of each SV650 cylinder, which are hidden behind the cut.</li>
+      <li>The near crank web of the SV650, cut away to show both rods on the shared pin.</li>
+    </ul>
+    <h2 style="margin-top:14px">Not to scale with each other</h2>
+    <p class="note" style="margin:0">Each drawing is fitted to its own frame, so the two are not a size comparison. Within one drawing, parts keep their proportions: bore, stroke and the piston travel you see share one scale.</p>
+  </section>
+  <section>
+    <h2>Sources</h2>
+    <ul>
+      <li><a href="https://www.globalsuzuki.com/motorcycle/smgs/products/2025sv650/">Suzuki Global: 2025 SV650 product page</a>, for the engine type, 645 cm³, 81.0 × 62.6 mm, 11.2:1, Dual Spark and 39 mm throttle bodies</li>
+      <li><a href="https://www.suzuki.co.nz/Motorcycles/Model/sv650a/lams">Suzuki New Zealand: SV650 specifications</a></li>
+      <li><a href="https://www.globalsuzuki.com/globalnews/2016/0803.html">Suzuki global news, 2016</a>, for the 90° V-twin and the tinned, resin-coated piston skirts</li>
+      <li><a href="https://hondanews.com/en-US/releases/release-410d07897fdd63d8043cb727500900a8-2024-honda-cbr650r-specifications">American Honda: 2024 CBR650R specifications</a>, for the 649 cc inline-four canted 30°, 67.0 × 46.0 mm, 11.6:1 and DOHC with four valves per cylinder</li>
+      <li><a href="https://www.honda.co.uk/motorcycles/range/super-sport/cbr650r/specifications-and-price.html">Honda UK: CBR650R specifications</a>, for 16 valves and 70 kW / 63 Nm</li>
+      <li><a href="https://hondanews.eu/eu/en/cars/media/pressreleases/35055/cbr650f-press-pack">Honda Europe: CBR650F press pack</a>, for direct cam actuation in the same engine family</li>
+      <li><a href="https://bayarearidersforum.com/forums/threads/how-to-sv650-valve-clearance-chk-adj.189876">SV650 valve-clearance how-to</a> (secondary), for the F and R marks 270° apart, front first</li>
+      <li><a href="https://en.wikipedia.org/wiki/Big-bang_firing_order">Wikipedia: big-bang firing order</a> (secondary), for the 90° V-twin's 270°/450° intervals</li>
+    </ul>
+  </section>
+</div>
+</div>
+<script>"use strict";
+// ---------------------------------------------------------------------------
+// Oblique solid renderer. World units are millimetres: x and y on the floor,
+// z up, y running away from the viewer. A cabinet-style oblique projection
+// keeps the front plane true to shape, so strokes, rods and crank throws drawn
+// in it keep their real proportions on screen.
+// ---------------------------------------------------------------------------
+const D2R = Math.PI / 180;
+const add = (...v) => v.reduce((a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]]);
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const mul = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const norm = (a) => mul(a, 1 / Math.hypot(a[0], a[1], a[2]));
+const r1 = (n) => Math.round(n * 10) / 10;
+const lerp = (a, b, t) => a + (b - a) * t;
+
+function P2(pts, close) {
+  let s = "";
+  for (let i = 0; i < pts.length; i++) s += (i ? "L" : "M") + r1(pts[i][0]) + " " + r1(pts[i][1]);
+  return close ? s + "Z" : s;
+}
+
+function hull(pts) {
+  const p = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lo = [], up = [];
+  for (const q of p) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+  for (let i = p.length - 1; i >= 0; i--) { const q = p[i]; while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
+  up.pop(); lo.pop();
+  return lo.concat(up);
+}
+
+const area2 = (poly) => {
+  let s = 0;
+  for (let i = 0; i < poly.length; i++) { const a = poly[i], b = poly[(i + 1) % poly.length]; s += a[0] * b[1] - b[0] * a[1]; }
+  return s / 2;
+};
+
+// 2D helpers for profiles
+const circ2 = (cx, cy, r, n = 24, a0 = 0, a1 = 360) => {
+  const out = [];
+  const full = Math.abs(a1 - a0) >= 360;
+  const count = full ? n : n + 1;
+  for (let i = 0; i < count; i++) { const t = (a0 + (a1 - a0) * i / n) * D2R; out.push([cx + r * Math.cos(t), cy + r * Math.sin(t)]); }
+  return out;
+};
+const rot2 = ([x, y], deg) => { const c = Math.cos(deg * D2R), s = Math.sin(deg * D2R); return [x * c - y * s, x * s + y * c]; };
+const rect2 = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+const rrect2 = (x0, y0, x1, y1, r, n = 5) => {
+  const out = [];
+  const cs = [[x1 - r, y0 + r, -90], [x1 - r, y1 - r, 0], [x0 + r, y1 - r, 90], [x0 + r, y0 + r, 180]];
+  for (const [cx, cy, a] of cs) for (let i = 0; i <= n; i++) { const t = (a + 90 * i / n) * D2R; out.push([cx + r * Math.cos(t), cy + r * Math.sin(t)]); }
+  return out;
+};
+
+function camera(deg, k) {
+  const cx = k * Math.cos(deg * D2R), cy = k * Math.sin(deg * D2R);
+  const V = norm([cx, -1, cy]);
+  const L = norm([-0.42, -0.62, 0.66]);
+  const E = { cx, cy, V, L, bb: null };
+  E.p = (q) => {
+    const s = [q[0] + q[1] * cx, -(q[2] + q[1] * cy)];
+    if (E.bb) { const b = E.bb; if (s[0] < b[0]) b[0] = s[0]; if (s[1] < b[1]) b[1] = s[1]; if (s[0] > b[2]) b[2] = s[0]; if (s[1] > b[3]) b[3] = s[1]; }
+    return s;
+  };
+  E.dk = (q) => dot(q, V);
+  E.lv = (n) => Math.max(0, Math.min(6, Math.round((dot(n, L) + 0.32) / 1.3 * 6)));
+  E.vis = (n) => dot(n, V) > 1e-4;
+  return E;
+}
+
+function basis(a) {
+  const t = Math.abs(a[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+  const e1 = norm(cross(a, t));
+  const e2 = cross(a, e1);
+  return [e1, e2];
+}
+
+const attrs = (o) => (o.asm ? ` data-asm="${o.asm}"` : "") + (o.cls ? ` class="${o.cls}"` : "");
+
+// Prism: a 2D profile in the (u, v) plane at o, extruded along ax from s0 to s1.
+function prism(E, o, u, v, ax, poly, s0, s1, opt = {}) {
+  if (area2(poly) < 0) poly = poly.slice().reverse();
+  const n = poly.length;
+  const W = (s, q) => add(o, mul(u, q[0]), mul(v, q[1]), mul(ax, s));
+  const A3 = poly.map((q) => W(s0, q)), B3 = poly.map((q) => W(s1, q));
+  const A = A3.map(E.p), B = B3.map(E.p);
+  const vis = new Array(n), byLevel = {};
+  for (let j = 0; j < n; j++) {
+    const k = (j + 1) % n;
+    const [x0, y0] = poly[j], [x1, y1] = poly[k];
+    const nr = norm(add(mul(u, y1 - y0), mul(v, -(x1 - x0))));
+    vis[j] = E.vis(nr);
+    if (vis[j]) { const L = E.lv(nr); (byLevel[L] ||= []).push(P2([A[j], A[k], B[k], B[j]], 1)); }
+  }
+  let out = "";
+  for (const L in byLevel) out += `<path class="f m${L}" d="${byLevel[L].join("")}"/>`;
+  const ca = dot(ax, E.V);
+  let cap = null, capN = null, cap3 = null;
+  if (ca > 1e-4) { cap = B; cap3 = B3; capN = ax; } else if (ca < -1e-4) { cap = A; cap3 = A3; capN = mul(ax, -1); }
+  if (cap) out += `<path class="f ${opt.cap || "m" + E.lv(capN)}" d="${P2(cap, 1)}"/>`;
+  let e = "", c = "";
+  for (let j = 0; j < n; j++) {
+    if (!vis[j]) continue;
+    const k = (j + 1) % n, pj = (j - 1 + n) % n;
+    if (cap !== A) e += P2([A[j], A[k]]);
+    if (cap !== B) e += P2([B[j], B[k]]);
+    if (!vis[pj]) e += P2([A[j], B[j]]);
+    else if (sharp(poly, j)) c += P2([A[j], B[j]]);
+    if (!vis[k]) e += P2([A[k], B[k]]);
+  }
+  if (cap) e += P2(cap, 1);
+  const inner = opt.on ? opt.on(cap3 ? (q) => E.p(W(cap === B ? s1 : s0, q)) : null) : "";
+  return `<g${attrs(opt)}>${out}${c ? `<path class="cr" d="${c}"/>` : ""}${inner}<path class="e" d="${e}"/>${opt.after || ""}</g>`;
+}
+
+function sharp(poly, j) {
+  const n = poly.length;
+  const p = poly[(j - 1 + n) % n], q = poly[j], r = poly[(j + 1) % n];
+  const a = [q[0] - p[0], q[1] - p[1]], b = [r[0] - q[0], r[1] - q[1]];
+  return (a[0] * b[0] + a[1] * b[1]) / (Math.hypot(...a) * Math.hypot(...b) || 1) < Math.cos(0.4);
+}
+
+// Round part (cylinder or frustum) along unit axis a from s0 to s1.
+function cyl(E, c, a, ra, rb, s0, s1, opt = {}) {
+  const N = opt.n || 40;
+  const [e1, e2] = opt.basis || basis(a);
+  const slope = (rb - ra) / (s1 - s0 || 1);
+  const ring = (s, r) => {
+    const o = [];
+    for (let i = 0; i < N; i++) { const t = 2 * Math.PI * i / N; o.push(E.p(add(c, mul(a, s), mul(e1, r * Math.cos(t)), mul(e2, r * Math.sin(t))))); }
+    return o;
+  };
+  const A = ring(s0, ra), B = ring(s1, rb);
+  const lv = [], vis = [];
+  for (let i = 0; i < N; i++) {
+    const t = 2 * Math.PI * (i + 0.5) / N;
+    const rad = add(mul(e1, Math.cos(t)), mul(e2, Math.sin(t)));
+    const nr = norm(add(rad, mul(a, -slope)));
+    vis[i] = dot(nr, E.V) > 0; lv[i] = E.lv(nr);
+  }
+  const H = hull(A.concat(B));
+  let out = `<path class="f m1" d="${P2(H, 1)}"/>`;
+  let st = vis.indexOf(false); if (st < 0) st = 0;
+  const bands = {};
+  let i = 0;
+  while (i < N) {
+    const j0 = (st + i) % N;
+    if (!vis[j0]) { i++; continue; }
+    let i2 = i; const L0 = lv[j0];
+    while (i2 < N && vis[(st + i2) % N] && lv[(st + i2) % N] === L0) i2++;
+    const idx = []; for (let q = i; q <= i2; q++) idx.push((st + q) % N);
+    (bands[L0] ||= []).push(P2(idx.map((q) => A[q]).concat(idx.slice().reverse().map((q) => B[q])), 1));
+    i = i2;
+  }
+  for (const L in bands) out += `<path class="f m${L}" d="${bands[L].join("")}"/>`;
+  const ca = dot(a, E.V);
+  let cap = null, capN = null;
+  if (ca > 1e-4 && rb > 0.01) { cap = B; capN = a; } else if (ca < -1e-4 && ra > 0.01) { cap = A; capN = mul(a, -1); }
+  if (cap) out += `<path class="f ${opt.cap || "m" + E.lv(capN)}" d="${P2(cap, 1)}"/>`;
+  let lines = "";
+  if (opt.rings) for (const [s, cls] of opt.rings) {
+    const r = ra + (s - s0) * slope;
+    lines += `<path class="${cls}" d="${arcVis(E, add(c, mul(a, s)), e1, e2, r, a, slope, N * 2)}"/>`;
+  }
+  const inner = opt.on ? opt.on(cap === B ? s1 : s0, cap) : "";
+  return `<g${attrs(opt)}>${out}${lines}${inner}<path class="e" d="${P2(H, 1)}${cap ? P2(cap, 1) : ""}"/></g>`;
+}
+
+// Visible front arc of a circle on a round surface.
+function arcVis(E, c, e1, e2, r, a, slope = 0, N = 64) {
+  let d = "", run = [];
+  for (let i = 0; i <= N; i++) {
+    const t = 2 * Math.PI * i / N;
+    const rad = add(mul(e1, Math.cos(t)), mul(e2, Math.sin(t)));
+    const ok = dot(norm(add(rad, mul(a, -slope))), E.V) > 0.02;
+    if (ok) run.push(E.p(add(c, mul(rad, r))));
+    else if (run.length) { if (run.length > 1) d += P2(run); run = []; }
+  }
+  if (run.length > 1) d += P2(run);
+  return d;
+}
+
+// Circle lying in a plane spanned by e1, e2.
+function circ3(E, c, e1, e2, r, N = 32) {
+  const o = [];
+  for (let i = 0; i < N; i++) { const t = 2 * Math.PI * i / N; o.push(E.p(add(c, mul(e1, r * Math.cos(t)), mul(e2, r * Math.sin(t))))); }
+  return o;
+}
+
+// The far half of a bore, seen from inside through the cut: e2 points away.
+function boreIn(E, c, a, e1, e2, R, s0, s1, N = 40) {
+  const pt = (s, t) => E.p(add(c, mul(a, s), mul(e1, R * Math.cos(t)), mul(e2, R * Math.sin(t))));
+  const A = [], B = [];
+  for (let i = 0; i <= N; i++) { const t = Math.PI * i / N; A.push(pt(s0, t)); B.push(pt(s1, t)); }
+  let out = `<path class="f bore0" d="${P2(A.concat(B.slice().reverse()), 1)}"/>`;
+  const bands = {};
+  for (let i = 0; i < N; i++) {
+    const t = Math.PI * (i + 0.5) / N;
+    const nin = mul(add(mul(e1, Math.cos(t)), mul(e2, Math.sin(t))), -1);
+    if (dot(nin, E.V) <= 0) continue;
+    const L = Math.min(6, E.lv(nin));
+    (bands[L] ||= []).push(P2([A[i], A[i + 1], B[i + 1], B[i]], 1));
+  }
+  for (const L in bands) out += `<path class="f bore b${L}" d="${bands[L].join("")}"/>`;
+  return out;
+}
+
+// A recessed cavity in a cut face: wall tone, then the floor shifted by depth.
+let CLIP = 0;
+function recess(E, polys, depth, floor = "cavf", wall = "cavw", opt = {}) {
+  const id = (opt.idp || "cv") + ++CLIP;
+  const sh = E.p(depth);
+  const d = polys.map((p) => P2(p, 1)).join("");
+  const xs = polys.flat();
+  const bx = [Math.min(...xs.map((q) => q[0])) - 2, Math.min(...xs.map((q) => q[1])) - 2, Math.max(...xs.map((q) => q[0])) + 2, Math.max(...xs.map((q) => q[1])) + 2];
+  return {
+    id,
+    svg: `<clipPath id="${id}"><path d="${d}"/></clipPath><g clip-path="url(#${id})"${attrs(opt)}><path class="f ${wall}" d="${P2(rect2(bx[0], bx[1], bx[2], bx[3]), 1)}"/><path class="f ${floor}" transform="translate(${r1(sh[0])} ${r1(sh[1])})" d="${d}"/>${opt.inner || ""}</g><path class="e" d="${d}"${opt.asm ? ` data-asm="${opt.asm}"` : ""}/>`,
+  };
+}
+
+// Coil spring around axis a, split into back and front halves.
+function coil(E, c, a, r, s0, s1, turns, wire) {
+  const [e1, e2] = basis(a);
+  const N = Math.round(turns * 36);
+  let back = [], front = [], cur = null, curFront = null;
+  const flush = () => { if (cur && cur.length > 1) (curFront ? front : back).push(P2(cur)); };
+  for (let i = 0; i <= N; i++) {
+    const t = i / N, ang = 2 * Math.PI * turns * t;
+    const rad = add(mul(e1, Math.cos(ang)), mul(e2, Math.sin(ang)));
+    const q = E.p(add(c, mul(a, lerp(s0, s1, t)), mul(rad, r)));
+    const f = dot(rad, E.V) > 0;
+    if (cur === null || f !== curFront) { if (cur) { cur.push(q); flush(); } cur = [q]; curFront = f; } else cur.push(q);
+  }
+  flush();
+  const draw = (d, cls) => d.length ? `<path class="coil-o ${cls}" d="${d.join("")}" style="stroke-width:${wire * 2 + 0.7}"/><path class="coil-i ${cls}" d="${d.join("")}" style="stroke-width:${wire * 2 - 0.5}"/>` : "";
+  return { back: draw(back, "cb"), front: draw(front, "cf") };
+}
+
+// Hex bolt head (with washer) standing on a face, axis a.
+function hexBolt(E, c, a, r, h, opt = {}) {
+  const [e1, e2] = basis(a);
+  const hex = []; for (let i = 0; i < 6; i++) hex.push(rot2([r, 0], 30 + i * 60));
+  return cyl(E, c, a, r * 1.25, r * 1.25, 0, 0.8, { n: 28, asm: opt.asm }) +
+    prism(E, c, e1, e2, a, hex, 0.8, h, { asm: opt.asm, cls: "bolt" });
+}
+
+// Profile of a cam: base circle rb, flank-to-nose lift h, half-width w (cam degrees).
+const camRho = (rb, h, w) => (b) => {
+  b = ((b + 180) % 360 + 360) % 360 - 180;
+  return Math.abs(b) < w ? rb + h * 0.5 * (1 + Math.cos(Math.PI * b / w)) : rb;
+};
+// Flat-faced follower lift against lobe angle relative to the follower (0..360 -> -180..180).
+function liftTable(rho, rb) {
+  const T = new Float32Array(361);
+  for (let d = 0; d <= 360; d++) {
+    const dl = d - 180;
+    let m = rb;
+    for (let b = -100; b <= 100; b += 0.5) m = Math.max(m, rho(b) * Math.cos((b + dl) * D2R));
+    T[d] = m - rb;
+  }
+  return T;
+}
+const lookLift = (T, deg) => {
+  let d = ((deg + 180) % 360 + 360) % 360;
+  const i = Math.floor(d), f = d - i;
+  return T[i] * (1 - f) + T[Math.min(360, i + 1)] * f;
+};
+const wrap180 = (d) => ((d + 180) % 360 + 360) % 360 - 180;
+
+// Piston position along its axis for crank throw r, rod L, crank angle alpha from TDC (deg).
+const slider = (r, L, alpha) => { const a = alpha * D2R; return r * Math.cos(a) + Math.sqrt(L * L - r * r * Math.sin(a) ** 2); };
+
+// The far half of a round part (theta 0..pi, rad = cos e1 + sin e2), with its end cap half-disc.
+function halfCyl(E, c, a, e1, e2, R, s0, s1, opt = {}) {
+  const N = opt.n || 28;
+  const pt = (s, t) => E.p(add(c, mul(a, s), mul(e1, R * Math.cos(t)), mul(e2, R * Math.sin(t))));
+  const A = [], B = [];
+  for (let i = 0; i <= N; i++) { const t = Math.PI * i / N; A.push(pt(s0, t)); B.push(pt(s1, t)); }
+  const H = hull(A.concat(B));
+  let out = `<path class="f m1" d="${P2(H, 1)}"/>`;
+  const bands = {};
+  for (let i = 0; i < N; i++) {
+    const t = Math.PI * (i + 0.5) / N;
+    const nr = add(mul(e1, Math.cos(t)), mul(e2, Math.sin(t)));
+    if (!E.vis(nr)) continue;
+    (bands[E.lv(nr)] ||= []).push(P2([A[i], A[i + 1], B[i + 1], B[i]], 1));
+  }
+  for (const L in bands) out += `<path class="f m${L}" d="${bands[L].join("")}"/>`;
+  let cap = "";
+  if (dot(a, E.V) > 0) cap = P2(B, 1); else if (dot(a, E.V) < 0) cap = P2(A, 1);
+  if (cap) out += `<path class="f ${opt.cap || "m5"}" d="${cap}"/>`;
+  return out + `<path class="e" d="${P2(H, 1)}${cap}"/>`;
+}
+
+// ---------------------------------------------------------------------------
+// Engine models. Every number the page shows comes from these functions; the
+// drawings are built from the same values.
+// ---------------------------------------------------------------------------
+const X = [1, 0, 0], Y = [0, 1, 0], Z = [0, 0, 1];
+const phaseOf = (local) => {
+  const l = ((local % 720) + 720) % 720;
+  return { local: l, index: Math.floor(l / 180), share: (l % 180) / 180 };
+};
+const PHASES = ["Power", "Exhaust", "Intake", "Compression"];
+
+// Cam events are idealized: one symmetric lobe per valve, peaks 105° from TDC.
+const IN_PEAK = 465, EX_PEAK = 255;
+
+/* ============================ Suzuki SV650 ============================ */
+function svModel() {
+  const M = {
+    key: "sv", r: 62.6 / 2, L: 130, bore: 81, R: 40.5,
+    cyls: [
+      { key: "front", label: "Front", short: "F", phi: 45, Yc: -10.5, fire: 0 },
+      { key: "rear", label: "Rear", short: "R", phi: -45, Yc: 10.5, fire: 270 },
+    ],
+    cam: { rb: 17, h: 8.0, w: 74 },
+  };
+  M.rho = camRho(M.cam.rb, M.cam.h, M.cam.w);
+  M.T = liftTable(M.rho, M.cam.rb);
+  for (const c of M.cyls) {
+    c.a = [-Math.sin(c.phi * D2R), 0, Math.cos(c.phi * D2R)];
+    c.n = c.phi > 0 ? [c.a[2], 0, -c.a[0]] : [-c.a[2], 0, c.a[0]];
+  }
+  // crankpin angle, CCW on screen from vertical (forward rotation in a left-side view)
+  M.psi = (theta) => 45 + theta;
+  M.state = (theta) => M.cyls.map((c) => {
+    const local = theta - c.fire;
+    const alpha = M.psi(theta) - c.phi;
+    const x = slider(M.r, M.L, alpha);
+    const ph = phaseOf(local);
+    const lm = ph.local;
+    const lin = lookLift(M.T, wrap180((lm - IN_PEAK) / 2));
+    const lex = lookLift(M.T, wrap180((lm - EX_PEAK) / 2));
+    return { c, local: lm, x, travel: M.r + M.L - x, phase: ph, lin, lex };
+  });
+  return M;
+}
+
+function svDrawing(M) {
+  const E = camera(52, 0.55);
+  const W = (c, u, w, y = 0) => add([0, c.Yc + y, 0], mul(c.n, u), mul(c.a, w));
+  const S = (c, u, w, y = 0) => E.p(W(c, u, w, y));
+  const BW = 63, BASE = 88, DECK = 196, DEPTH = 62;
+  const roofApex = 207.5, tIn = Math.tan(14 * D2R), tEx = Math.tan(16 * D2R);
+  const roof = (u) => roofApex - Math.abs(u) * (u > 0 ? tIn : tEx);
+  const VAL = {
+    in: { u: 16, rh: 15.5, ang: 14, side: 1 },
+    ex: { u: -15, rh: 12.75, ang: -16, side: -1 },
+  };
+  for (const k in VAL) { const v = VAL[k]; v.d2 = [Math.sin(v.ang * D2R), Math.cos(v.ang * D2R)]; v.w = roof(v.u); }
+  const CAM_S = 97 + M.cam.rb + 0.15;
+  const vpt = (v, s, off = 0) => [v.u + v.d2[0] * s + v.d2[1] * off, v.w + v.d2[1] * s - v.d2[0] * off];
+
+  // ----- crankcase: the far half, cut behind the crank -----
+  function caseLayer() {
+    const [fr, re] = M.cyls;
+    const xz = (p) => [p[0], p[2]];
+    const outline = [
+      xz(W(fr, -66, BASE)), [-118, -10], [-112, -62], [-80, -104], [-36, -122], [36, -122], [80, -104], [112, -62], [118, -10],
+      xz(W(re, -66, BASE)), xz(W(re, 66, BASE)), xz(W(fr, 66, BASE)),
+    ];
+    const Yp = 40;
+    const bolts = [[-104, -18], [-92, -72], [-50, -108], [0, -112], [50, -108], [92, -72], [104, -18], [0, 98], [-70, 44], [70, 44]];
+    const on = () => {
+      let s = "";
+      for (const [x, z] of bolts) {
+        s += `<path class="f m3" d="${P2(circ3(E, [x, Yp, z], X, Z, 3.6, 18), 1)}"/><path class="cr" d="${P2(circ3(E, [x, Yp, z], X, Z, 5.2, 22), 1)}"/>`;
+      }
+      for (const [x, z] of [[-30, -88], [30, -88], [0, -76]]) s += `<path class="f cavw" d="${P2(circ3(E, [x, Yp, z], X, Z, 2.4, 14), 1)}"/>`;
+      return s;
+    };
+    let s = prism(E, [0, 0, 0], X, Z, Y, outline, Yp, Yp + 34, { cap: "cut", asm: "case", on });
+    // main bearing boss and the far main journal
+    s += cyl(E, [0, 0, 0], Y, 34, 34, 37.5, Yp, { cap: "m4", asm: "case", n: 56 });
+    s += cyl(E, [0, 0, 0], Y, 22, 22, 36.5, 37.5, { asm: "crank", n: 48 });
+    return s;
+  }
+
+  // ----- crank: far web and crankpin (near web cut away) -----
+  const webProfile = hull([...circ2(M.r, 0, 25, 28), ...circ2(0, 0, 30, 28), ...circ2(0, 0, 62, 24, 180 - 64, 180 + 64)]);
+  function crankLayer(theta) {
+    const psi = M.psi(theta) * D2R;
+    const u = [-Math.sin(psi), 0, Math.cos(psi)], v = [-Math.cos(psi), 0, -Math.sin(psi)];
+    const pin = mul(u, M.r);
+    const on = (proj) => proj ? `<path class="f rec" d="${P2(circ2(-46, 0, 6.5, 18).map(proj), 1)}"/><path class="e" d="${P2(circ2(-46, 0, 6.5, 18).map(proj), 1)}"/><path class="cr" d="${P2(circ2(0, 0, 26, 32).map(proj), 1)}"/>` : "";
+    let s = prism(E, [0, 0, 0], u, v, Y, webProfile, 21, 36.5, { asm: "crank", on });
+    s += cyl(E, pin, Y, 19, 19, -20.5, 21, { asm: "crank rod", n: 44 });
+    return s;
+  }
+
+  // ----- connecting rod: big end on the shared pin -----
+  const rodProfile = hull([...circ2(0, 0, 28, 36), ...circ2(M.L, 0, 13, 24)]);
+  function rodSvg(c, theta, st) {
+    const psi = M.psi(theta) * D2R;
+    const pin = [-M.r * Math.sin(psi), c.Yc, M.r * Math.cos(psi)];
+    const wrist = add([0, c.Yc, 0], mul(c.a, st.x));
+    const u = norm(sub(wrist, pin));
+    const v = [-u[2], 0, u[0]];
+    const y0 = -10, y1 = 10;
+    const nub = (sgn) => prism(E, pin, u, v, Y, rect2(-25, sgn * 19, -14, sgn * 26), y0 + 3, y1 - 3, { asm: "rod", cls: "bolt" });
+    const on = (proj) => {
+      if (!proj) return "";
+      const beam = [[34, -10], [M.L - 22, -5.5], [M.L - 22, 5.5], [34, 10]];
+      return `<path class="f rec" d="${P2(beam.map(proj), 1)}"/><path class="cr" d="${P2(beam.map(proj), 1)}"/>` +
+        `<path class="cr" d="${P2(circ2(0, 0, 20.4, 40).map(proj), 1)}${P2([[0, 20.4], [0, 28]].map(proj))}${P2([[0, -20.4], [0, -28]].map(proj))}"/>` +
+        `<path class="f m5" d="${P2(circ2(M.L, 0, 9, 24).map(proj), 1)}"/><path class="e" d="${P2(circ2(M.L, 0, 9, 24).map(proj), 1)}"/><path class="cr" d="${P2(circ2(M.L, 0, 10.8, 24).map(proj), 1)}"/>`;
+    };
+    return nub(1) + nub(-1) + prism(E, [pin[0], 0, pin[2]], u, v, Y, rodProfile, c.Yc + y0, c.Yc + y1, { asm: "rod", on });
+  }
+
+  function pinEnd(theta) {
+    const psi = M.psi(theta) * D2R;
+    const pin = [-M.r * Math.sin(psi), 0, M.r * Math.cos(psi)];
+    return cyl(E, pin, Y, 19, 19, -22.5, -20.5, { asm: "crank rod", n: 44, on: (s) => `<path class="f cavw" d="${P2(circ3(E, add(pin, mul(Y, s)), X, Z, 2.6, 14), 1)}"/>` });
+  }
+
+  // ----- piston with rings, pin boss and crown -----
+  function pistonSvg(c, st) {
+    const base = add([0, c.Yc, 0], mul(c.a, st.x));
+    const rings = [[26, "ring"], [22, "ring"], [17.6, "ring2"], [15.6, "ring2"]];
+    const boss = add(base, [0, -38.6, 0]);
+    let s = cyl(E, base, c.a, M.R, M.R, -24, 30, {
+      asm: "piston", n: 56, rings, cap: "crown",
+      on: (sc) => `<path class="cr" d="${P2(circ3(E, add(base, mul(c.a, sc)), c.n, Y, M.R - 3, 48), 1)}"/>`,
+    });
+    s += `<g data-asm="piston"><path class="f m5" d="${P2(circ3(E, boss, c.n, c.a, 10, 24), 1)}"/><path class="e" d="${P2(circ3(E, boss, c.n, c.a, 10, 24), 1)}"/><path class="cr" d="${P2(circ3(E, boss, c.n, c.a, 7, 20), 1)}"/></g>`;
+    return s;
+  }
+
+  // ----- one valve with its spring, retainer and bucket -----
+  function valveSvg(c, v, lift) {
+    const seat = W(c, v.u, v.w, -15);
+    const ax = norm(add(mul(c.n, v.d2[0]), mul(c.a, v.d2[1])));
+    const at = (s) => add(seat, mul(ax, s - lift));
+    const sp = coil(E, add(seat, mul(ax, 42)), ax, 9.6, 0, 81 - lift - 42, 6.5, 1.5);
+    const tag = { asm: "valve" };
+    let s = cyl(E, add(seat, mul(ax, 40)), ax, 11.8, 11.8, 0, 2, { ...tag, n: 32 });
+    s += `<g data-asm="valve">${sp.back}</g>`;
+    s += cyl(E, at(0), ax, 2.25, 2.25, 13, 95, { ...tag, n: 16 });
+    s += cyl(E, at(0), ax, v.rh - 1.8, 2.6, 2.4, 13, { ...tag, n: 36 });
+    s += cyl(E, at(0), ax, v.rh, v.rh - 0.6, 0, 2.4, { ...tag, n: 40 });
+    s += cyl(E, at(0), ax, 6, 10.8, 77, 81, { ...tag, n: 28 }) + cyl(E, at(0), ax, 10.8, 10.8, 81, 83.5, { ...tag, n: 28 });
+    s += `<g data-asm="valve">${sp.front}</g>`;
+    s += cyl(E, at(0), ax, 13.5, 13.5, 85, 97, { ...tag, n: 36, rings: [[95.5, "cr"]] });
+    return s;
+  }
+
+  function camSvg(c, v, delta) {
+    const seat2 = vpt(v, CAM_S);
+    const ctr = W(c, seat2[0], seat2[1], 0);
+    const ax2 = [-(c.n[0] * v.d2[0] + c.a[0] * v.d2[1]), -(c.n[2] * v.d2[0] + c.a[2] * v.d2[1])];
+    const lobeDir = rot2(ax2, delta);
+    const prof = [];
+    for (let b = -180; b < 180; b += 5) { const d = rot2(lobeDir, b); const r = M.rho(b); prof.push([d[0] * r, d[1] * r]); }
+    const o = [ctr[0], 0, ctr[2]];
+    let s = cyl(E, ctr, Y, 11, 11, -8, 0, { asm: "valve", n: 28 });
+    s += prism(E, o, X, Z, Y, prof, c.Yc - 22, c.Yc - 8, { asm: "valve", cls: "lobe" });
+    s += cyl(E, ctr, Y, 11, 11, -29, -22, { asm: "valve", n: 28, on: (sc) => `<path class="f cavw" d="${P2(circ3(E, add(ctr, mul(Y, sc)), X, Z, 2.2, 12), 1)}"/>` });
+    return s;
+  }
+
+  // ----- static cylinder: block, bore, coolant jacket, head, ports -----
+  const portPoly = (p0, p1, p2, w0, w1) => {
+    const L = [], R = [];
+    for (let i = 0; i <= 18; i++) {
+      const t = i / 18;
+      const q = [(1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * p1[0] + t * t * p2[0], (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * p1[1] + t * t * p2[1]];
+      const d = [2 * (1 - t) * (p1[0] - p0[0]) + 2 * t * (p2[0] - p1[0]), 2 * (1 - t) * (p1[1] - p0[1]) + 2 * t * (p2[1] - p1[1])];
+      const l = Math.hypot(d[0], d[1]); const nn = [-d[1] / l, d[0] / l]; const hw = lerp(w0, w1, t);
+      L.push([q[0] + nn[0] * hw, q[1] + nn[1] * hw]); R.push([q[0] - nn[0] * hw, q[1] - nn[1] * hw]);
+    }
+    return L.concat(R.reverse());
+  };
+  function cylLayer(c) {
+    const P = (poly, y = 0) => poly.map(([u, w]) => S(c, u, w, y));
+    const block = [[-66, BASE], [66, BASE], [66, 97], [BW, 100], [BW, DECK - 3], [BW - 3, DECK], [-BW + 3, DECK], [-BW, DECK - 3], [-BW, 100], [-66, 97]];
+    let s = `<g>`;
+    s += prism(E, [0, c.Yc, 0], c.n, c.a, Y, block, 0, DEPTH, { cap: "cut", asm: "cyl" });
+    // bore: the far half of the cylinder wall, seen through the cut
+    const ch = rect2(-M.R, BASE, M.R, DECK);
+    const cid = "svb" + c.key;
+    s += `<clipPath id="${cid}"><path d="${P2(P(ch), 1)}"/></clipPath><g clip-path="url(#${cid})" data-asm="cyl">${boreIn(E, add([0, c.Yc, 0], mul(c.a, 0)), c.a, c.n, Y, M.R, BASE, DECK)}</g><path class="e" d="${P2(P(ch), 1)}"/>`;
+    s += `<path class="bore-plate" d="${P2(P([[-M.R, BASE], [-M.R, DECK]]))}${P2(P([[M.R, BASE], [M.R, DECK]]))}"/>`;
+    // coolant jacket either side of the bore
+    s += recess(E, [P(rrect2(45, 104, 56, 190, 3)), P(rrect2(-56, 104, -45, 190, 3))], [0, 34, 0], "cool", "coolw", { asm: "cyl cool" }).svg;
+    s += `<text class="engrave" transform="${faceMatrix(E, W(c, -52, 90.6), [c.a[2], 0, -c.a[0]], c.a)}" font-size="6.4" text-anchor="middle">${c.short}</text>`;
+    s += `</g><g>`;
+    // head casting
+    const head = [[-BW, DECK], [BW, DECK], [BW, 236], [82, 258], [82, 320], [78, 338], [62, 350], [-62, 350], [-78, 338], [-82, 320], [-82, 258], [-BW, 236]];
+    const bolts = [-34, 34].map((u) => hexBolt(E, W(c, u, 350, 34), c.a, 4.6, 5, { asm: "head" })).join("");
+    s += prism(E, [0, c.Yc, 0], c.n, c.a, Y, head, 0, DEPTH, { cap: "cut", asm: "head" });
+    // combustion chamber (pent roof) with the firing glow
+    const chamber = [[-M.R, DECK], [M.R, DECK]];
+    for (let u = M.R; u >= -M.R; u -= 4.5) chamber.push([u, Math.max(DECK, roof(u))]);
+    const chP = P(chamber);
+    s += recess(E, [chP], [0, 30, 0], "cavf", "cavw", { asm: "head", inner: `<path class="flash" data-flash="${c.key}" d="${P2(chP, 1)}" opacity="0"/>` }).svg;
+    // ports
+    const inP = portPoly(vpt(VAL.in, 7), vpt(VAL.in, 38), [82, 252], 11.5, 13.5);
+    const exP = portPoly(vpt(VAL.ex, 7), vpt(VAL.ex, 30), [-BW, 228], 10, 12);
+    s += recess(E, [P(inP), P(exP)], [0, 14, 0], "cavf", "cavw", { asm: "head" }).svg;
+    // cam box with the bucket bores and spring pockets
+    const pocket = (v) => [vpt(v, 40, -15), vpt(v, 40, 15), vpt(v, 110, 15), vpt(v, 110, -15)];
+    s += recess(E, [P(rrect2(-76, 262, 76, 344, 10)), P(pocket(VAL.in)), P(pocket(VAL.ex))], [0, 20, 0], "cavf", "cavw", { asm: "head" }).svg;
+    // coolant passages round the chamber
+    s += recess(E, [P(rrect2(44, 199, 58, 213, 3)), P(rrect2(-58, 199, -44, 213, 3))], [0, 22, 0], "cool", "coolw", { asm: "head cool" }).svg;
+    s += bolts + `</g>`;
+    return s;
+  }
+
+  // ----- layers in painter's order -----
+  const [FR, RE] = M.cyls;
+  const valvetrain = (c, st) => {
+    const dIn = wrap180((st.local - IN_PEAK) / 2), dEx = wrap180((st.local - EX_PEAK) / 2);
+    return valveSvg(c, VAL.ex, st.lex) + valveSvg(c, VAL.in, st.lin) + camSvg(c, VAL.ex, dEx) + camSvg(c, VAL.in, dIn);
+  };
+  const layers = [
+    { stat: caseLayer },
+    { dyn: (t, S2) => crankLayer(t) },
+    { stat: () => cylLayer(RE) },
+    { dyn: (t, S2) => rodSvg(RE, t, S2[1]) + pistonSvg(RE, S2[1]) + valvetrain(RE, S2[1]) },
+    { stat: () => cylLayer(FR) },
+    { dyn: (t, S2) => rodSvg(FR, t, S2[0]) + pinEnd(t) + pistonSvg(FR, S2[0]) + valvetrain(FR, S2[0]) },
+  ];
+  return { E, layers };
+}
+
+/* ============================ Honda CBR650R ============================ */
+function cbrModel() {
+  const M = {
+    key: "cbr", r: 23, L: 98, bore: 67, R: 33.5, pitch: 80, cant: 30,
+    cyls: [1, 2, 3, 4].map((n) => ({ key: "c" + n, n, label: "Cyl " + n, short: String(n), fire: { 1: 0, 2: 180, 4: 360, 3: 540 }[n] })),
+    cam: { rb: 14, h: 6.8, w: 74 },
+  };
+  M.rho = camRho(M.cam.rb, M.cam.h, M.cam.w);
+  M.T = liftTable(M.rho, M.cam.rb);
+  // Drawn in the engine's own frame and seen square to the cut plane, which
+  // contains the crank axis and the cylinder axes (canted 30° forward on the bike).
+  M.a = [0, 0, 1];             // cylinder axis
+  M.t = [0, -1, 0];            // toward the viewer: the front of the engine
+  M.d = [0, 1, 0];             // away from the viewer
+  // #1 is on the rider's left, which is the right of this front view.
+  for (const c of M.cyls) c.X = (2.5 - c.n) * M.pitch;
+  M.pinPsi = (theta, c) => theta - c.fire;
+  M.state = (theta) => M.cyls.map((c) => {
+    const local = theta - c.fire;
+    const ph = phaseOf(local);
+    const x = slider(M.r, M.L, ph.local % 360);
+    const lin = lookLift(M.T, wrap180((ph.local - IN_PEAK) / 2));
+    const lex = lookLift(M.T, wrap180((ph.local - EX_PEAK) / 2));
+    return { c, local: ph.local, x, travel: M.r + M.L - x, phase: ph, lin, lex };
+  });
+  return M;
+}
+
+function cbrDrawing(M) {
+  const E = camera(32, 0.5);
+  const A = M.a, T = M.t, Dv = M.d;
+  const G = (Xg, w, t = 0) => add([Xg, 0, 0], mul(A, w), mul(T, t));
+  const GP = (poly, t = 0) => poly.map(([x, w]) => E.p(G(x, w, t)));
+  const HALF = 184, BASE = 66, DECK = 148, TOP = 232;
+  const ang = 12.5 * D2R;
+  const roofW = (t) => DECK + 7.2 - Math.abs(t) * Math.tan(ang);
+  const VAL = {
+    ex: { t: 11, rh: 11, side: 1, xs: [-12, 12] },
+    in: { t: -12, rh: 13, side: -1, xs: [-13, 13] },
+  };
+  for (const k in VAL) {
+    const v = VAL[k];
+    v.w = roofW(v.t);
+    v.ax = norm(add(mul(A, Math.cos(ang)), mul(T, v.side * Math.sin(ang))));
+  }
+  const CAM_S = 90 + M.cam.rb + 0.15;
+  const seat = (v, Xg) => G(Xg, v.w, v.t);
+
+  // ----- crankcase: far half, cut behind the crank, with bearing webs -----
+  function caseLayer() {
+    const o = [0, 0, 0];
+    const outline = rrect2(-HALF, -96, HALF, BASE, 10);
+    const on = () => {
+      let s = "";
+      for (const x of [-172, 172]) for (const w of [-80, 40]) s += `<path class="f m3" d="${P2(circ3(E, add(G(x, w), mul(Dv, 50)), X, A, 3.6, 18), 1)}"/><path class="cr" d="${P2(circ3(E, add(G(x, w), mul(Dv, 50)), X, A, 5.2, 20), 1)}"/>`;
+      return s;
+    };
+    let s = prism(E, o, X, A, Dv, outline, 50, 84, { cap: "cut", asm: "case", on });
+    for (const c of M.cyls) s += `<text class="engrave" transform="${faceMatrix(E, add(G(c.X, -88), mul(Dv, 50)), X, A)}" font-size="9" text-anchor="middle">${c.n}</text>`;
+    // main bearing webs, cut 20 mm behind the crank axis
+    const webs = [-2, -1, 0, 1, 2].map((k) => k * M.pitch);
+    for (const xb of webs) {
+      const x0 = xb - (Math.abs(xb) === 2 * M.pitch ? 10 : 14), x1 = xb + (Math.abs(xb) === 2 * M.pitch ? 10 : 14);
+      const poly = [[x0, -86], [x1, -86], [x1, 34], [x0, 34]];
+      const studs = (proj) => {
+        let t = "";
+        for (const xs of [x0 + 7, x1 - 7]) {
+          const ch = rect2(xs - 2.6, -70, xs + 2.6, 28);
+          t += `<path class="f cavw" d="${P2(ch.map(proj), 1)}"/><path class="f m4" d="${P2(rect2(xs - 1.8, -70, xs + 1.8, 28).map(proj), 1)}"/><path class="cr" d="${P2(ch.map(proj), 1)}"/>`;
+        }
+        return t;
+      };
+      s += prism(E, o, X, A, Dv, poly, 20, 50, { cap: "cut", asm: "case", on: (proj) => proj ? studs(proj) : "" });
+    }
+    return s;
+  }
+
+  // ----- block, bores, coolant, head, chambers, plug wells -----
+  function blockLayer() {
+    let s = "";
+    const block = [[-HALF, BASE], [HALF, BASE], [HALF, DECK - 3], [HALF - 3, DECK], [-HALF + 3, DECK], [-HALF, DECK - 3]];
+    s += prism(E, [0, 0, 0], X, A, Dv, block, 0, 72, { cap: "cut", asm: "cyl" });
+    for (const c of M.cyls) {
+      const id = "cbrb" + c.n;
+      const ch = GP(rect2(c.X - M.R, BASE, c.X + M.R, DECK));
+      s += `<clipPath id="${id}"><path d="${P2(ch, 1)}"/></clipPath><g clip-path="url(#${id})" data-asm="cyl">${boreIn(E, [c.X, 0, 0], A, X, Dv, M.R, BASE, DECK)}</g><path class="e" d="${P2(ch, 1)}"/>`;
+      s += `<path class="bore-plate" d="${P2(GP([[c.X - M.R, BASE], [c.X - M.R, DECK]]))}${P2(GP([[c.X + M.R, BASE], [c.X + M.R, DECK]]))}"/>`;
+    }
+    s += recess(E, [GP(rrect2(-HALF + 6, 76, -HALF + 16, 142, 3)), GP(rrect2(HALF - 16, 76, HALF - 6, 142, 3))], mul(Dv, 30), "cool", "coolw", { asm: "cyl cool" }).svg;
+    return s;
+  }
+
+  let chamberClip = "";
+  function headLayer() {
+    let s = "";
+    const head = [[-HALF, DECK], [HALF, DECK], [HALF, TOP - 6], [HALF - 6, TOP], [-HALF + 6, TOP], [-HALF, TOP - 6]];
+    s += prism(E, [0, 0, 0], X, A, Dv, head, 0, 70, { cap: "cut", asm: "head" });
+    const chambers = M.cyls.map((c) => GP([[c.X - M.R, DECK], [c.X + M.R, DECK], [c.X + 26, DECK + 7.2], [c.X - 26, DECK + 7.2]]));
+    const flashes = M.cyls.map((c, i) => `<path class="flash" data-flash="${c.key}" d="${P2(chambers[i], 1)}" opacity="0"/>`).join("");
+    const ch = recess(E, chambers, mul(Dv, 26), "cavf", "cavw", { asm: "head", inner: flashes, idp: "cbrch" });
+    chamberClip = ch.id;
+    s += ch.svg;
+    s += recess(E, M.cyls.map((c) => GP(rrect2(c.X - 7, DECK + 7.2, c.X + 7, TOP, 2))), mul(Dv, 9), "cavf", "cavw", { asm: "head" }).svg;
+    const cool = [];
+    for (let k = -2; k <= 2; k++) { const xm = k * M.pitch; const hw = Math.abs(k) === 2 ? 0 : 5; if (hw) cool.push(GP(rrect2(xm - hw, 156, xm + hw, 186, 2))); }
+    cool.push(GP(rrect2(-HALF + 8, 154, -HALF + 18, 196, 3)), GP(rrect2(HALF - 18, 154, HALF - 8, 196, 3)));
+    s += recess(E, cool, mul(Dv, 24), "cool", "coolw", { asm: "head cool" }).svg;
+    return s;
+  }
+
+  // ----- valves -----
+  function valveSvg(v, Xg, lift, whole) {
+    const sp0 = seat(v, Xg);
+    const ax = v.ax;
+    const at = (s) => add(sp0, mul(ax, s - lift));
+    const tag = { asm: "valve" };
+    if (!whole) {
+      // intake side, behind the cut: head in the chamber, bucket above the deck
+      const sDeck = (TOP - v.w) / dot(ax, A);
+      const head = cyl(E, at(0), ax, v.rh, v.rh - 0.6, 0, 2.2, { ...tag, n: 32 }) + cyl(E, at(0), ax, v.rh - 1.6, 2.4, 2.2, 10, { ...tag, n: 28 });
+      const bucket = cyl(E, sp0, ax, 12.5, 12.5, Math.max(sDeck, 76 - lift), 90 - lift, { ...tag, n: 32, rings: [[88.6 - lift, "cr"]] });
+      return { head, bucket, bore: `<path class="cr" data-asm="valve" d="${P2(circ3(E, add(sp0, mul(ax, sDeck)), X, norm(cross(ax, X)), 13.4, 32), 1)}"/>` };
+    }
+    const sp = coil(E, add(sp0, mul(ax, 36)), ax, 8.4, 0, 72 - lift - 36, 6, 1.3);
+    let s = cyl(E, add(sp0, mul(ax, 34)), ax, 10.2, 10.2, 0, 2, { ...tag, n: 28 });
+    s += `<g data-asm="valve">${sp.back}</g>`;
+    s += cyl(E, at(0), ax, 2.1, 2.1, 10, 87, { ...tag, n: 14 });
+    s += cyl(E, at(0), ax, v.rh - 1.6, 2.4, 2.2, 10, { ...tag, n: 28 });
+    s += cyl(E, at(0), ax, v.rh, v.rh - 0.6, 0, 2.2, { ...tag, n: 32 });
+    s += cyl(E, at(0), ax, 5.2, 9.4, 68.5, 72, { ...tag, n: 24 }) + cyl(E, at(0), ax, 9.4, 9.4, 72, 74, { ...tag, n: 24 });
+    s += `<g data-asm="valve">${sp.front}</g>`;
+    s += cyl(E, at(0), ax, 12.5, 12.5, 78, 90, { ...tag, n: 32, rings: [[88.6, "cr"]] });
+    return s;
+  }
+
+  // camshaft across all four cylinders, lobes in order of x
+  function camSvg(v, deltas) {
+    const ctr = (Xg) => add(seat(v, Xg), mul(v.ax, CAM_S));
+    const c0 = ctr(0);
+    const toYZ = (p) => [p[1], p[2]];
+    const ax2 = [-v.ax[1], -v.ax[2]];
+    const rotYZ = ([y, z], deg) => { const cs = Math.cos(deg * D2R), sn = Math.sin(deg * D2R); return [y * cs - z * sn, y * sn + z * cs]; };
+    const lobes = [];
+    for (const c of M.cyls) for (const xo of v.xs) lobes.push({ x0: c.X + xo - 6.5, x1: c.X + xo + 6.5, d: deltas[c.n] });
+    lobes.sort((a, b) => a.x0 - b.x0);
+    const shaft = (x0, x1) => cyl(E, [x0, c0[1], c0[2]], X, 10, 10, 0, x1 - x0, { asm: "valve", n: 28 });
+    let s = "", x = -HALF + 14;
+    for (const l of lobes) {
+      if (l.x0 > x) s += shaft(x, l.x0);
+      const dir = rotYZ(ax2, l.d);
+      const prof = [];
+      for (let b = -180; b < 180; b += 6) { const d = rotYZ(dir, b); const r = M.rho(b); prof.push([d[0] * r, d[1] * r]); }
+      s += prism(E, [0, c0[1], c0[2]], Y, Z, X, prof, l.x0, l.x1, { asm: "valve", cls: "lobe" });
+      x = l.x1;
+    }
+    s += shaft(x, HALF - 14);
+    void toYZ;
+    return s;
+  }
+
+  // cam holders on the deck behind the cut (intake side)
+  function holderLayer() {
+    let s = "";
+    const v = VAL.in;
+    const c0 = add(seat(v, 0), mul(v.ax, CAM_S));
+    const tC = -dot(c0, Dv), wC = dot(c0, A);
+    for (let k = -2; k <= 2; k++) {
+      const xb = k * M.pitch, hw = 8;
+      const poly = [[tC - 15, TOP], [tC + 15, TOP], [tC + 15, wC + 4], [tC + 11, wC + 13], [tC - 11, wC + 13], [tC - 15, wC + 4]];
+      const o = [xb - hw, 0, 0];
+      s += prism(E, o, T, A, X, poly, 0, 2 * hw, { asm: "head" });
+      for (const tt of [tC - 9, tC + 9]) s += hexBolt(E, add([xb, 0, 0], mul(T, tt), mul(A, wC + 13)), A, 3.8, 4, { asm: "head" });
+    }
+    return s;
+  }
+
+  // ----- crank, rods, pistons -----
+  const webProfile = hull([...circ2(M.r, 0, 20, 28), ...circ2(0, 0, 22, 28), ...circ2(0, 0, 46, 24, 180 - 62, 180 + 62)]);
+  const rodProfile = hull([...circ2(0, 0, 24, 36), ...circ2(M.L, 0, 11, 24)]);
+  const plane = (psi) => {
+    const p = psi * D2R;
+    const u = [0, -Math.sin(p), Math.cos(p)];
+    const v = norm(cross(X, u));
+    return { u, v };
+  };
+  function crankSvg(theta, S2) {
+    let s = "";
+    const xs = M.cyls.map((c) => c.X).sort((a, b) => a - b);
+    const byX = M.cyls.slice().sort((a, b) => a.X - b.X);
+    const main = (x0, x1) => cyl(E, [x0, 0, 0], X, 16, 16, 0, x1 - x0, { asm: "crank", n: 36 });
+    s += main(-HALF + 20, xs[0] - 22);
+    byX.forEach((c, i) => {
+      const { u, v } = plane(M.pinPsi(theta, c));
+      const pin = mul(u, M.r);
+      const st = S2[c.n - 1];
+      const web = (x0, x1) => prism(E, [0, 0, 0], u, v, X, webProfile, x0, x1, {
+        asm: "crank", on: (proj) => proj ? `<path class="f rec" d="${P2(circ2(-34, 0, 5, 16).map(proj), 1)}"/><path class="e" d="${P2(circ2(-34, 0, 5, 16).map(proj), 1)}"/><path class="cr" d="${P2(circ2(0, 0, 17, 28).map(proj), 1)}"/>` : "",
+      });
+      s += web(c.X - 22, c.X - 10);
+      s += cyl(E, add([c.X - 10, 0, 0], pin), X, 15, 15, 0, 20, { asm: "crank rod", n: 36 });
+      // rod
+      const wrist = add([c.X, 0, 0], mul(A, st.x));
+      const ru = norm(sub(wrist, add([c.X, 0, 0], pin)));
+      const rv = norm(cross(X, ru));
+      const pin3 = add([0, 0, 0], pin);
+      const nub = (sg) => prism(E, pin3, ru, rv, X, rect2(-21, sg * 16, -12, sg * 22), c.X - 6, c.X + 6, { asm: "rod", cls: "bolt" });
+      const on = (proj) => {
+        if (!proj) return "";
+        const beam = [[29, -8.5], [M.L - 18, -4.6], [M.L - 18, 4.6], [29, 8.5]];
+        return `<path class="f rec" d="${P2(beam.map(proj), 1)}"/><path class="cr" d="${P2(beam.map(proj), 1)}"/>` +
+          `<path class="cr" d="${P2(circ2(0, 0, 16.4, 36).map(proj), 1)}${P2([[0, 16.4], [0, 24]].map(proj))}${P2([[0, -16.4], [0, -24]].map(proj))}"/>` +
+          `<path class="f m5" d="${P2(circ2(M.L, 0, 7.6, 20).map(proj), 1)}"/><path class="e" d="${P2(circ2(M.L, 0, 7.6, 20).map(proj), 1)}"/>`;
+      };
+      s += nub(1) + nub(-1) + prism(E, pin3, ru, rv, X, rodProfile, c.X - 9, c.X + 9, { asm: "rod", on });
+      s += web(c.X + 10, c.X + 22);
+      s += pistonSvg(c, st);
+      const next = byX[i + 1];
+      s += main(c.X + 22, next ? next.X - 22 : HALF - 20);
+    });
+    return s;
+  }
+  function pistonSvg(c, st) {
+    const base = add([c.X, 0, 0], mul(A, st.x));
+    const rings = [[22.5, "ring"], [19, "ring"], [15.2, "ring2"], [13.6, "ring2"]];
+    let s = cyl(E, base, A, M.R, M.R, -16, 26, {
+      asm: "piston", n: 56, rings, cap: "crown",
+      on: (sc) => `<path class="cr" d="${P2(circ3(E, add(base, mul(A, sc)), X, T, M.R - 2.6, 48), 1)}"/>`,
+    });
+    const boss = add(base, [M.R - 1.2, 0, 0]);
+    s += `<g data-asm="piston"><path class="f m5" d="${P2(circ3(E, boss, T, A, 8, 22), 1)}"/><path class="e" d="${P2(circ3(E, boss, T, A, 8, 22), 1)}"/><path class="cr" d="${P2(circ3(E, boss, T, A, 5.6, 18), 1)}"/></g>`;
+    return s;
+  }
+
+  const deltas = (S2, peak) => Object.fromEntries(S2.map((st) => [st.c.n, wrap180((st.local - peak) / 2)]));
+  const byX = () => M.cyls.slice().sort((a, b) => a.X - b.X);
+
+  const layers = [
+    { stat: caseLayer },
+    { stat: blockLayer },
+    { stat: headLayer },
+    {
+      dyn: (t, S2) => {
+        // intake side behind the cut: valve heads seen in the chambers, buckets and cam on the deck
+        let heads = "", bores = "", buckets = "";
+        for (const c of byX()) for (const xo of VAL.in.xs) {
+          const r = valveSvg(VAL.in, c.X + xo, S2[c.n - 1].lin, false);
+          heads += r.head; bores += r.bore; buckets += r.bucket;
+        }
+        return `<g clip-path="url(#${chamberClip})">${heads}</g>` + bores + buckets + camSvg(VAL.in, deltas(S2, IN_PEAK));
+      },
+    },
+    { stat: holderLayer },
+    {
+      dyn: (t, S2) => {
+        let s = crankSvg(t, S2);
+        for (const c of byX()) for (const xo of VAL.ex.xs) s += valveSvg(VAL.ex, c.X + xo, S2[c.n - 1].lex, true);
+        s += camSvg(VAL.ex, deltas(S2, EX_PEAK));
+        return s;
+      },
+    },
+  ];
+  return { E, layers };
+}
+
+// A transform that lays text in the plane spanned by e1 (text x) and e2 (text up).
+function faceMatrix(E, o, e1, e2) {
+  const p0 = E.p(o), px = E.p(add(o, e1)), py = E.p(add(o, mul(e2, -1)));
+  return `matrix(${r1x(px[0] - p0[0])} ${r1x(px[1] - p0[1])} ${r1x(py[0] - p0[0])} ${r1x(py[1] - p0[1])} ${r1(p0[0])} ${r1(p0[1])})`;
+}
+const r1x = (n) => Math.round(n * 1000) / 1000;
+
+// ---------------------------------------------------------------------------
+// Page: one crank angle drives both engines, the cards and the timeline.
+// ---------------------------------------------------------------------------
+const SPEED = 30; // crank degrees per second: one full cycle in 24 s
+const ASM = {
+  sv: [
+    ["crank", "Crankshaft", "<b>Crankshaft.</b> One crankpin carries both rods. The near web is cut away so you can see both big ends on the one pin. The crank is drawn turning forward, the same way as the wheels."],
+    ["rod", "Con-rods", "<b>Connecting rods.</b> Both rods share the pin side by side, so the two cylinders sit slightly offset across the engine. Rod length is idealized at 130 mm. It sets the shape of the piston-travel curve between the dead centres, but not the 62.6 mm stroke."],
+    ["piston", "Pistons & rings", "<b>Pistons and rings.</b> The bore is 81 mm. Each piston carries two compression rings and an oil-control ring. Suzuki tins and resin-coats the piston skirts on the 2016-on engine."],
+    ["cyl", "Cylinders & coolant", "<b>Cylinders and coolant jacket.</b> Each cylinder is cut through its own axis, 90° apart. The blue-grey slots either side of each bore are the water jacket of this liquid-cooled engine. Jacket shape is idealized."],
+    ["head", "Heads & chambers", "<b>Cylinder heads.</b> Each head has a pent-roof chamber, with the intake port toward the V and the exhaust port facing out. The chamber glows briefly as each cylinder starts its power stroke. Port shapes are idealized, and the Dual Spark plugs (two per cylinder) are left out."],
+    ["valve", "Valvetrain", "<b>Valvetrain.</b> DOHC, four valves per cylinder. The section shows the near intake and exhaust valve of each cylinder, each closed by a coil spring and pushed open by its cam through a bucket. The cams turn at half crank speed. Lobe shapes and timing are idealized."],
+    ["case", "Crankcase", "<b>Crankcase.</b> This is the far case half, cut behind the crank, with case bolts shown in section and the main bearing boss."],
+  ],
+  cbr: [
+    ["crank", "Crankshaft", "<b>Crankshaft.</b> The throws for cylinders 1 and 4 share one angle, and 2 and 3 sit 180° opposite, so the pistons move in pairs. The five main journals are an idealized drawing."],
+    ["rod", "Con-rods", "<b>Connecting rods.</b> One rod per throw, its cap held by two bolts. Rod length is idealized at 98 mm. It shapes the travel curve between the dead centres, but not the 46 mm stroke."],
+    ["piston", "Pistons & rings", "<b>Pistons and rings.</b> 67 mm bore against a 46 mm stroke: a short-stroke engine built to rev. Each piston carries two compression rings and an oil-control ring."],
+    ["cyl", "Block & coolant", "<b>Cylinder block.</b> The four bores are cut along the plane of their axes, which Honda cants forward 30°. Coolant jacket shape is idealized."],
+    ["head", "Head & chambers", "<b>Cylinder head.</b> The head has four chambers, the plug wells (spark plugs left out) and coolant passages. The intake half of the head lies behind the cut, with its cam holders and bolts on the deck."],
+    ["valve", "Valvetrain", "<b>Valvetrain.</b> Two overhead camshafts span all four cylinders, sixteen valves in total. The exhaust cam and its eight valves stand in front of the cut. Behind it, the intake cam drives eight buckets on the deck, and the intake valve heads show in the chambers. Honda describes direct cam actuation. Lobe shapes and timing are idealized."],
+    ["case", "Crankcase", "<b>Crankcase.</b> This is the far half, cut behind the crank, showing the main-bearing webs with their cap bolts in section. The web layout is idealized."],
+  ],
+};
+
+const ENG = {};
+const state = { theta: 0, playing: false, view: "both" };
+const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+
+function mount(key) {
+  const M = key === "sv" ? svModel() : cbrModel();
+  const D = key === "sv" ? svDrawing(M) : cbrDrawing(M);
+  const root = document.querySelector(`.engine[data-engine="${key}"]`);
+  const stage = root.querySelector(".stage");
+  const svg = stage.querySelector("svg");
+  // fit the view box over every pose of the cycle
+  D.E.bb = [Infinity, Infinity, -Infinity, -Infinity];
+  const statics = D.layers.map((l) => (l.stat ? l.stat() : ""));
+  for (let t = 0; t < 720; t += 15) { const S2 = M.state(t); D.layers.forEach((l) => l.dyn && l.dyn(t, S2)); }
+  const [x0, y0, x1, y1] = D.E.bb;
+  D.E.bb = null;
+  const pad = 8;
+  svg.setAttribute("viewBox", `${r1(x0 - pad)} ${r1(y0 - pad)} ${r1(x1 - x0 + 2 * pad)} ${r1(y1 - y0 + 2 * pad)}`);
+  const groups = D.layers.map((l, i) => {
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    if (l.stat) g.innerHTML = statics[i];
+    svg.appendChild(g);
+    return g;
+  });
+  const flashes = [...svg.querySelectorAll("[data-flash]")];
+  const E = { key, M, D, root, stage, svg, groups, flashes, onscreen: true, drawn: null };
+  ENG[key] = E;
+  buildCards(E);
+  buildChips(E);
+  new IntersectionObserver((entries) => {
+    E.onscreen = entries[entries.length - 1].isIntersecting;
+    if (E.onscreen) { draw(); kick(); }
+  }, { rootMargin: "80px 0px" }).observe(stage);
+}
+
+function shown(E) { return state.view === "both" || state.view === E.key; }
+
+function drawEngine(E, theta) {
+  const S2 = E.M.state(theta);
+  if (E.onscreen && shown(E) && E.drawn !== theta) {
+    E.D.layers.forEach((l, i) => { if (l.dyn) E.groups[i].innerHTML = l.dyn(theta, S2); });
+    for (const el of E.flashes) {
+      const st = S2.find((s) => s.c.key === el.dataset.flash);
+      const glow = st.local < 70 ? Math.pow(1 - st.local / 70, 1.6) * 0.85 : 0;
+      el.setAttribute("opacity", glow.toFixed(3));
+    }
+    E.drawn = theta;
+  }
+  updateCards(E, S2);
+  return S2;
+}
+
+function buildCards(E) {
+  const wrap = E.root.querySelector(".cyls");
+  const list = E.key === "cbr" ? E.M.cyls.slice().sort((a, b) => a.n - b.n) : E.M.cyls;
+  wrap.dataset.n = list.length;
+  for (const c of list) {
+    const el = document.createElement(E.key === "cbr" ? "button" : "div");
+    el.className = "cyl-card";
+    el.dataset.cyl = c.key;
+    if (E.key === "cbr") { el.type = "button"; el.setAttribute("aria-label", `Cylinder ${c.n}: jump to its firing angle, ${c.fire}°`); el.addEventListener("click", () => { pause(); setTheta(c.fire); announce(`Crank set to ${c.fire}°: cylinder ${c.n} at top dead centre, starting its power stroke.`); }); }
+    el.innerHTML = `<span class="top"><span>${E.key === "cbr" ? "Cylinder " + c.n : c.label + " cyl"}</span><span>fires ${c.fire}°</span></span><span class="ph"></span><span class="bar"><i></i></span><span class="num"></span><span class="vlv"></span>`;
+    wrap.appendChild(el);
+    c.card = { el, ph: el.querySelector(".ph"), bar: el.querySelector(".bar i"), num: el.querySelector(".num"), vlv: el.querySelector(".vlv") };
+  }
+}
+
+function updateCards(E, S2) {
+  for (const st of S2) {
+    const k = st.c.card;
+    const name = PHASES[st.phase.index];
+    if (k.ph.textContent !== name) k.ph.textContent = name;
+    k.el.dataset.phase = st.phase.index;
+    k.bar.style.width = (st.phase.share * 100).toFixed(1) + "%";
+    k.num.textContent = `${st.travel.toFixed(1)} mm below TDC`;
+    const v = [];
+    if (st.lin > 0.05) v.push(`IN ${st.lin.toFixed(1)}`);
+    if (st.lex > 0.05) v.push(`EX ${st.lex.toFixed(1)}`);
+    k.vlv.textContent = v.length ? `valve lift ${v.join(" · ")} mm` : "valves closed";
+  }
+}
+
+function buildChips(E) {
+  const chips = E.root.querySelector(".chips");
+  const out = E.root.querySelector(".explain");
+  const list = ASM[E.key];
+  const all = document.createElement("button");
+  all.type = "button"; all.textContent = "Whole engine"; all.setAttribute("aria-pressed", "true");
+  chips.appendChild(all);
+  const buttons = [all];
+  const intro = out.innerHTML;
+  const pick = (k, html, btn) => {
+    for (const b of buttons) b.setAttribute("aria-pressed", String(b === btn));
+    if (k) E.stage.dataset.sel = k; else delete E.stage.dataset.sel;
+    out.innerHTML = html;
+  };
+  all.addEventListener("click", () => pick(null, intro, all));
+  for (const [k, label, html] of list) {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = label; b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", () => (b.getAttribute("aria-pressed") === "true" ? pick(null, intro, all) : pick(k, html, b)));
+    chips.appendChild(b); buttons.push(b);
+  }
+}
+
+// selection styling for every assembly key
+(() => {
+  const keys = ["crank", "rod", "piston", "cyl", "head", "valve", "case"];
+  const css = keys.map((k) =>
+    `.stage[data-sel="${k}"] [data-asm]:not([data-asm~="${k}"]){opacity:.2}` +
+    `.stage[data-sel="${k}"] [data-asm~="${k}"] .e,.stage[data-sel="${k}"] path.e[data-asm~="${k}"]{stroke:var(--lit);stroke-width:1.05px}` +
+    `.stage[data-sel="${k}"] [data-asm~="${k}"] .coil-o{stroke:var(--lit)}`).join("");
+  const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
+})();
+
+// ----- firing timeline -----
+const TL = { x0: 104, x1: 748 };
+const tx = (deg) => TL.x0 + (deg / 720) * (TL.x1 - TL.x0);
+function buildTimeline() {
+  const svg = document.querySelector(".tl svg");
+  const lanes = [
+    { group: "SUZUKI SV650 · 90° V-TWIN", y: 22 },
+    { label: "Front", fire: 0, y: 32 },
+    { label: "Rear", fire: 270, y: 52 },
+    { gaps: [[0, 270, "270°  front → rear"], [270, 720, "450°  rear → front"]], y: 82 },
+    { group: "HONDA CBR650R · INLINE-FOUR", y: 116 },
+    { label: "Cyl 1", fire: 0, y: 126 },
+    { label: "Cyl 2", fire: 180, y: 146 },
+    { label: "Cyl 3", fire: 540, y: 166 },
+    { label: "Cyl 4", fire: 360, y: 186 },
+    { gaps: [[0, 180, "180°  1→2"], [180, 360, "180°  2→4"], [360, 540, "180°  4→3"], [540, 720, "180°  3→1"]], y: 216 },
+  ];
+  const H = 14;
+  let s = "";
+  for (let d = 0; d <= 720; d += 90) {
+    s += `<line class="grid" x1="${tx(d)}" x2="${tx(d)}" y1="12" y2="226"/>`;
+    s += `<text class="axis" x="${tx(d)}" y="244" text-anchor="middle">${d}°</text>`;
+  }
+  const cls = ["seg-p", "seg-e", "seg-i", "seg-c"], words = ["power", "exhaust", "intake", "compression"];
+  for (const l of lanes) {
+    if (l.group) { s += `<text class="group-label" x="0" y="${l.y}">${l.group}</text>`; continue; }
+    if (l.gaps) {
+      for (const [a, b, t] of l.gaps) {
+        const ya = l.y - 8;
+        s += `<path class="gapline" d="M${tx(a) + 2} ${ya - 4}V${ya}H${tx(b) - 2}V${ya - 4}"/>`;
+        s += `<text class="gap" x="${(tx(a) + tx(b)) / 2}" y="${l.y + 5}" text-anchor="middle">${t}</text>`;
+      }
+      continue;
+    }
+    s += `<text class="lane-label" x="0" y="${l.y + 11}">${l.label}</text>`;
+    for (let p = 0; p < 4; p++) {
+      const a = (l.fire + p * 180) % 720, b = a + 180;
+      const pieces = b <= 720 ? [[a, b]] : [[a, 720], [0, b - 720]];
+      pieces.forEach(([pa, pb], i) => {
+        const w = tx(pb) - tx(pa);
+        s += `<rect class="${cls[p]}" x="${(tx(pa) + 1).toFixed(1)}" y="${l.y}" width="${Math.max(0, w - 2).toFixed(1)}" height="${H}" rx="2"><title>${l.label}: ${words[p]}, ${(l.fire + p * 180) % 720}° to ${(l.fire + p * 180 + 180) % 720 || 720}°</title></rect>`;
+        if (w > 60 && (pieces.length === 1 || pb - pa >= 90)) s += `<text class="seg-t ${p === 0 ? "on-dark" : "on-light"}" data-p="${p}" x="${tx(pa) + 6}" y="${l.y + 10.5}">${words[p]}</text>`;
+      });
+    }
+    s += `<path class="fire" d="M${tx(l.fire)} ${l.y - 3}l4 4-4 4-4-4z"><title>${l.label} fires at ${l.fire}°</title></path>`;
+    if (l.fire === 0) s += `<path class="fire" d="M${tx(720)} ${l.y - 3}l4 4-4 4-4-4z"/>`;
+  }
+  s += `<g class="cur"><line class="cursor" x1="0" x2="0" y1="10" y2="228"/><path class="cursor-cap" d="M-5 4h10l-5 6z"/></g>`;
+  svg.innerHTML = s;
+  const cur = svg.querySelector(".cur");
+  TL.cur = cur;
+  const toTheta = (ev) => {
+    const box = svg.getBoundingClientRect();
+    const x = (ev.clientX - box.left) / box.width * 780;
+    return Math.max(0, Math.min(719, ((x - TL.x0) / (TL.x1 - TL.x0)) * 720));
+  };
+  let dragging = false;
+  svg.addEventListener("pointerdown", (ev) => { dragging = true; svg.setPointerCapture(ev.pointerId); pause(); setTheta(Math.round(toTheta(ev))); });
+  svg.addEventListener("pointermove", (ev) => { if (dragging) setTheta(Math.round(toTheta(ev))); });
+  svg.addEventListener("pointerup", () => { dragging = false; });
+  svg.addEventListener("pointercancel", () => { dragging = false; });
+}
+
+// ----- controls -----
+const crankInput = document.getElementById("crank");
+const out = document.getElementById("crank-out");
+const play = document.getElementById("play");
+const live = document.getElementById("live");
+let raf = 0, last = 0, announceTimer = 0;
+
+function announce(text) { clearTimeout(announceTimer); announceTimer = setTimeout(() => { live.textContent = text; }, 60); }
+
+function describe() {
+  const parts = [];
+  for (const k of ["sv", "cbr"]) {
+    const E = ENG[k]; if (!E || !shown(E)) continue;
+    const S2 = E.M.state(state.theta);
+    const firing = S2.filter((s) => s.phase.index === 0).map((s) => (k === "sv" ? s.c.label.toLowerCase() : "cylinder " + s.c.n));
+    parts.push(`${k === "sv" ? "SV650" : "CBR650R"} power stroke: ${firing.join(" and ") || "none"}`);
+  }
+  return `${Math.round(state.theta)}° crank angle. ${parts.join(". ")}.`;
+}
+
+function draw() {
+  const t = state.theta;
+  for (const k in ENG) {
+    const E = ENG[k];
+    const S2 = drawEngine(E, t);
+    const pw = S2.filter((s) => s.phase.index === 0);
+    const ro = E.root.querySelector(".corner.readout");
+    const txt = `θ ${String(Math.round(t)).padStart(3, " ")}° · power: ${pw.length ? pw.map((s) => (k === "sv" ? s.c.label.toLowerCase() : "#" + s.c.n)).join(", ") : "none"}`;
+    if (ro.textContent !== txt) ro.textContent = txt;
+  }
+  if (TL.cur) TL.cur.setAttribute("transform", `translate(${tx(t).toFixed(2)} 0)`);
+  const v = Math.round(t) % 720;
+  if (String(crankInput.value) !== String(v)) crankInput.value = v;
+  out.textContent = `${v}°`;
+  crankInput.setAttribute("aria-valuetext", describe());
+}
+
+function setTheta(t) { state.theta = ((t % 720) + 720) % 720; draw(); }
+
+function anyVisible() { return Object.values(ENG).some((E) => E.onscreen && shown(E)); }
+function tick(now) {
+  raf = 0;
+  if (!state.playing) return;
+  if (!anyVisible() || document.hidden) { last = 0; return; }
+  const dt = last ? Math.min(0.1, (now - last) / 1000) : 0;
+  last = now;
+  setTheta(state.theta + SPEED * dt);
+  raf = requestAnimationFrame(tick);
+}
+function kick() { if (state.playing && !raf) { last = 0; raf = requestAnimationFrame(tick); } }
+function setPlaying(on) {
+  state.playing = on;
+  play.setAttribute("aria-pressed", String(on));
+  play.querySelector(".lbl").textContent = on ? "Pause" : "Play";
+  play.querySelector(".ico").innerHTML = on ? '<path d="M1 0h3v10H1zM6 0h3v10H6z"/>' : '<path d="M1 0l9 5-9 5z"/>';
+  if (on) kick(); else { cancelAnimationFrame(raf); raf = 0; }
+}
+function pause() { if (state.playing) setPlaying(false); }
+
+play.addEventListener("click", () => setPlaying(!state.playing));
+crankInput.addEventListener("input", () => { pause(); setTheta(Number(crankInput.value)); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden) kick(); });
+
+for (const b of document.querySelectorAll("[data-view-btn]")) {
+  b.addEventListener("click", () => {
+    state.view = b.dataset.viewBtn;
+    for (const o of document.querySelectorAll("[data-view-btn]")) o.setAttribute("aria-pressed", String(o === b));
+    document.querySelector(".engines").dataset.view = state.view;
+    for (const k in ENG) ENG[k].drawn = null;
+    draw();
+    kick();
+  });
+}
+
+mount("sv");
+mount("cbr");
+buildTimeline();
+setTheta(0);
+setPlaying(!reduce.matches);
+reduce.addEventListener("change", () => { if (reduce.matches) pause(); });
+</script>
+</body>
+</html>
